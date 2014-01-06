@@ -19,20 +19,35 @@
 
 (defn new-net
   "Adds a new net to nets and associates it with the name."
-  [name] (swap! nets assoc name {:edges-from  {}
-                                 :edges-to    {}
-                                 :places      {}
-                                 :transitions #{}}))
-(new-net test)
+  [net]
+  (swap! nets assoc net {:edges-from   {}
+                         :edges-to     {}
+                         :places       {}
+                         :transitions #{}}))
+(new-net :test)
 @nets
 
 (defn reset-net
   "Clear all nets and restore it to defaults"
-  [] (reset! nets {}))
+  []
+  (reset! nets {}))
 (reset-net)
 
 (get @nets test)
+(:test @nets)
+(@nets :test)
 
+((@nets :test) :places)
 
 (doc new-net)
 (doc reset-net)
+
+(defn add-place
+  "Adds a new place into an existing petri net"
+  [net name tokens]
+  (let [newplaces (assoc ((@nets net) :places) name tokens)
+        newnet    (assoc  (@nets net) :places  newplaces)]
+    (swap! nets assoc net newnet)))
+
+(add-place :test :p 42)
+@nets
