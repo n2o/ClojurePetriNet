@@ -5,25 +5,25 @@
 ;; Each entry symbolizes one net in this program. It is structured as
 ;; follows:
 ;; {:net1
-;;    {:edges-from   {:from {:to Tokens}}
-;;     :edges-to     {:to {:from Tokens}}
-;;     :places       {:place1 Tokens, :place2 42, ...}
-;;     :transitions #{:name1, :name2, ...}}
+;;    {:edges-from-trans   {:from {:to tokens}}
+;;     :edges-to-trans     {:from {:to tokens}}
+;;     :places             {:place1 Tokens, :place2 42, ...}
+;;     :transitions       #{:name1, :name2, ...}}
 ;;
-;; edges-from : key is :from, seems to be a good idea
-;; edges-to   : key is :to, seems to be a good idea
-;; places     : adds a new place into the net and stores tokens
-;; transitions: a set of transitions 
+;; edges-from-trans : key is :from, seems to be a good idea
+;; edges-to-trans   : key is :to, seems to be a good idea
+;; places           : adds a new place into the net and stores tokens
+;; transitions      : a set of transitions 
 
 (def nets (atom {}))
 
 (defn new-net
   "Adds a new net to nets and associates it with the name."
   [net]
-  (swap! nets assoc net {:edges-from   {}
-                         :edges-to     {}
-                         :places       {}
-                         :transitions #{}}))
+  (swap! nets assoc net {:edges-from-trans {}
+                         :edges-to-trans   {}
+                         :places           {}
+                         :transitions     #{}}))
 (new-net :test)
 
 (defn reset-net
@@ -35,10 +35,8 @@
 (defn add-place
   "Adds a new place into an existing petri net."
   [net name tokens]
-  (let [new-places (assoc ((@nets net) :places) name tokens)
-        new-net    (assoc  (@nets net) :places  new-places)]
-    (swap! nets assoc net new-net)))
-(add-place :test :p 43)
+  (swap! nets assoc-in [net :places name] tokens))
+(add-place :test :p 44)
 
 (defn add-transition
   "Adds a new transition into an existing petri net."
@@ -46,18 +44,17 @@
   (let [new-trans (conj ((@nets net) :transitions) name)
         new-net   (assoc (@nets net) :transitions  new-trans)]
     (swap! nets assoc net new-net)))
-(add-transition :test :bombe4)
+(add-transition :test :bombe5)
 
-(defn add-edge
-  "Add an edge between a place and a transition."
+(defn add-edge-to-transition
+  "Add an edge from a place to a transition."
   [net from to tokens]
-  (when (or
-         (and (from ((@nets net) :places))
-              (to   ((@nets net) :transitions)))
-         (and (from ((@nets net) :transitions))
-              (to   ((@nets net) :places))))
-    (let [new-edges-to   (assoc ((@nets net) :edges-to)   to   {from tokens})
-          new-edges-from (assoc ((@nets net) :edges-from) from {to   tokens})
-          new-net        (assoc  (@nets net) :edges-to new-edges-to :edges-from new-edges-from)]
-      (swap! nets assoc net new-net))))
-(add-edge :test :p :bombe 4)
+  (when
+    (and (from ((@nets net) :places))
+         (to   ((@nets net) :transitions)))
+      (swap! nets assoc-in [net :edges-to-trans from] {to tokens})))
+(add-edge-to-transition :test :p :bombe4 42)
+
+@nets
+
+
