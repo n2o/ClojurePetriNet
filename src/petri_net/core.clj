@@ -45,9 +45,15 @@
 (defn add-place
   "Adds a new place into an existing petri net"
   [net name tokens]
-  (let [newplaces (assoc ((@nets net) :places) name tokens)
-        newnet    (assoc  (@nets net) :places  newplaces)]
-    (swap! nets assoc net newnet)))
+  (let [new-places (assoc ((@nets net) :places) name tokens)
+        new-net    (assoc  (@nets net) :places  new-places)]
+    (swap! nets assoc net new-net)))
+(add-place :test :p 43)
 
-(add-place :test :p 42)
-@nets
+(defn add-transition
+  "Adds a new transition into an existing petri net"
+  [net name]
+  (let [new-trans (conj ((@nets net) :transitions) name)
+        new-net   (assoc (@nets net) :transitions new-trans)]
+    (swap! nets assoc net new-net)))
+(add-transition :test :bombe4)
