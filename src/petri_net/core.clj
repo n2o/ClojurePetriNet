@@ -24,19 +24,16 @@
                          :edges-to-trans   {}
                          :places           {}
                          :transitions     #{}}))
-(new-net :test)
 
 (defn reset-net
   "Clear all nets and restore it to defaults."
   []
   (reset! nets {}))
-(reset-net)
 
 (defn add-place
   "Adds a new place into an existing petri net."
   [net name tokens]
   (swap! nets assoc-in [net :places name] tokens))
-(add-place :test :p 44)
 
 (defn add-transition
   "Adds a new transition into an existing petri net."
@@ -44,17 +41,24 @@
   (let [new-trans (conj ((@nets net) :transitions) name)
         new-net   (assoc (@nets net) :transitions  new-trans)]
     (swap! nets assoc net new-net)))
-(add-transition :test :bombe5)
 
 (defn add-edge-to-transition
   "Add an edge from a place to a transition."
   [net from to tokens]
-  (when
-    (and (from ((@nets net) :places))
-         (to   ((@nets net) :transitions)))
-      (swap! nets assoc-in [net :edges-to-trans from] {to tokens})))
+  (when (and (from ((@nets net) :places))
+             (to   ((@nets net) :transitions)))
+    (swap! nets assoc-in [net :edges-to-trans from] {to tokens})))
+
+(defn add-edge-from-transition
+  "Add an edge from a transition to a place."
+  [net from to tokens]
+  (when (and (from ((@nets net) :transitions))
+             (to   ((@nets net) :place)))
+    (swap! nets assoc-in [net :edges-from-trans from] {to tokens})))
+
+;;
+(new-net :test)
+(reset-net)
+(add-transition :test :bombe5)
 (add-edge-to-transition :test :p :bombe4 42)
-
-@nets
-
-
+(add-place :test :p 44)
