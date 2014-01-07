@@ -53,12 +53,15 @@
   "Add an edge from a transition to a place."
   [net from to tokens]
   (when (and (from ((@nets net) :transitions))
-             (to   ((@nets net) :place)))
+             (to   ((@nets net) :places)))
     (swap! nets assoc-in [net :edges-from-trans from] {to tokens})))
 
 ;;
 (new-net :test)
 (reset-net)
-(add-transition :test :bombe5)
-(add-edge-to-transition :test :p :bombe4 42)
+(add-transition :test :bombe)
 (add-place :test :p 44)
+(add-edge-to-transition :test :p :bombe 41)
+(add-edge-from-transition :test :bombe5 :p 21)
+
+@nets
