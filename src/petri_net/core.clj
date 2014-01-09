@@ -17,15 +17,17 @@
 
 (def nets (atom {}))
 
+;;;; Basic functions
+
 (defn new-net
   "Adds a new net to nets and associates it with the name."
   [net]
-  (swap! nets assoc net {:edges-from-trans {}
-                         :edges-to-trans   {}
-                         :places           {}
-                         :transitions     #{}}))
+  (swap! nets assoc net {:edges-from-trans  {}
+                         :edges-to-trans    {}
+                         :places            {}
+                         :transitions      #{}}))
 
-(defn reset-net
+(defn reset-nets
   "Clear all nets and restore it to defaults."
   []
   (reset! nets {}))
@@ -45,23 +47,42 @@
 (defn add-edge-to-transition
   "Add an edge from a place to a transition."
   [net from to tokens]
-  (when (and (from ((@nets net) :places))
-             (to   ((@nets net) :transitions)))
-    (swap! nets assoc-in [net :edges-to-trans from] {to tokens})))
+  (swap! nets assoc-in [net :edges-to-trans from to] tokens))
 
 (defn add-edge-from-transition
   "Add an edge from a transition to a place."
   [net from to tokens]
-  (when (and (from ((@nets net) :transitions))
-             (to   ((@nets net) :places)))
-    (swap! nets assoc-in [net :edges-from-trans from] {to tokens})))
+  (swap! nets assoc-in [net :edges-from-trans from to] tokens))
 
-;;
+
+;;;; Merging two nets
+(use 'clojure.set)
+(defn merge-net
+  "Merging two nets and define which places / transitions should be merged.
+   Places and Transitions must be key-value pairs."
+  [net1 net2 places transitions]
+  (let [merged-places      (merge ((@nets net1) :places) ((@nets net2) :places))
+        merged-transitions (union ((@nets net1) :transitions) ((@nets net2) :transitions))]
+    
+    (println merged-places)
+    (println merged-transitions)))
+
+(merge-with max {} {})
+(merge-net :test :second {} {})
+
+;;;; Testing area
+@nets
 (new-net :test)
-(reset-net)
+(reset-nets)
 (add-transition :test :bombe)
+(add-transition :test :bombe2)
 (add-place :test :p 44)
 (add-edge-to-transition :test :p :bombe 41)
-(add-edge-from-transition :test :bombe5 :p 21)
+(add-edge-to-transition :test :p :bombe2 43)
+(add-edge-to-transition :test :a :bombe 41)
+(add-edge-from-transition :test :bombe2 :p 22)
 
-@nets
+(new-net :second)
+(add-transition :second :foo)
+(add-place :second :q 22)
+(add-edge-to-transition :second :q :foo 1)
