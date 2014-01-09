@@ -22,10 +22,10 @@
 (defn new-net
   "Adds a new net to nets and associates it with the name."
   [net]
-  (swap! nets assoc net {:edges-from-trans  {}
-                         :edges-to-trans    {}
-                         :places            {}
-                         :transitions      #{}}))
+  (swap! nets assoc net {:edges-from-trans {}
+                         :edges-to-trans   {}
+                         :places           {}
+                         :transitions     #{}}))
 
 (defn reset-nets
   "Clear all nets and restore it to defaults."
@@ -56,19 +56,26 @@
 
 
 ;;;; Merging two nets
-(use 'clojure.set)
+(use '[clojure.set :only [union]])
+(use '[clojure.walk :only [prewalk-replace]])
+
 (defn merge-net
   "Merging two nets and define which places / transitions should be merged.
    Places and Transitions must be key-value pairs."
   [net1 net2 places transitions]
-  (let [merged-places      (merge ((@nets net1) :places) ((@nets net2) :places))
+  (let [places-net1 (prewalk-replace places ((@nets net1) :places))
+        places-net2 (prewalk-replace places ((@nets net2) :places))
+        merged-places      (merge ((@nets net1) :places)      ((@nets net2) :places))
         merged-transitions (union ((@nets net1) :transitions) ((@nets net2) :transitions))]
-    
+    (println places-net1)
     (println merged-places)
     (println merged-transitions)))
 
 (merge-with max {} {})
 (merge-net :test :second {} {})
+
+;;(prewalk-replace {:a :b} {:a {:bombe 41}, :p {:bombe2 43, :bombe 41}})
+
 
 ;;;; Testing area
 @nets
