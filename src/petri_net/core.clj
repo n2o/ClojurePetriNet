@@ -1,6 +1,9 @@
 (ns petri-net.core
   (:gen-class))
 
+(use '[clojure.set :only [union]])
+(use '[clojure.walk :only [prewalk-replace]])
+
 ;; Store all nets into nets
 ;; Each entry symbolizes one net in this program. It is structured as
 ;; follows:
@@ -32,32 +35,32 @@
   []
   (reset! nets {}))
 
+(defn- prefix-string
+  "Add the network as a prefix for the input variable"
+  [net input]
+  (str net "#" input))
+
 (defn add-place
   "Adds a new place into an existing petri net."
   [net name tokens]
-  (swap! nets assoc-in [net :places name] tokens))
+  (swap! nets assoc-in [net :places (prefix-string net name)] tokens))
 
 (defn add-transition
   "Adds a new transition into an existing petri net."
   [net name]
-  (let [new-trans (conj ((@nets net) :transitions) name)
-        new-net   (assoc (@nets net) :transitions  new-trans)]
-    (swap! nets assoc net new-net)))
+  (swap! nets update-in [net :transitions] #(union % #{(prefix-string net name)})))
 
 (defn add-edge-to-transition
   "Add an edge from a place to a transition."
   [net from to tokens]
-  (swap! nets assoc-in [net :edges-to-trans from to] tokens))
+  (swap! nets assoc-in [net :edges-to-trans (prefix-string net from) (prefix-string net to)] tokens))
 
 (defn add-edge-from-transition
   "Add an edge from a transition to a place."
   [net from to tokens]
-  (swap! nets assoc-in [net :edges-from-trans from to] tokens))
-
+  (swap! nets assoc-in [net :edges-from-trans (prefix-string net from) (prefix-string net to)] tokens))
 
 ;;;; Merging two nets
-(use '[clojure.set :only [union]])
-(use '[clojure.walk :only [prewalk-replace]])
 
 (defn merge-net
   "Merging two nets and define which places / transitions should be merged.
@@ -82,7 +85,7 @@
 (new-net :test)
 (reset-nets)
 (add-transition :test :bombe)
-(add-transition :test :bombe2)
+(add-transition :test :bombi)
 (add-place :test :p 44)
 (add-edge-to-transition :test :p :bombe 41)
 (add-edge-to-transition :test :p :bombe2 43)
