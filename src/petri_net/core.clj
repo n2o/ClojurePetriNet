@@ -1,7 +1,7 @@
 (ns petri-net.core
   (:gen-class))
 
-(use '[clojure.set :only [union]])
+;; Kill this and add better solution later on
 (use '[clojure.walk :only [prewalk-replace]])
 
 ;; Store all nets into nets
@@ -30,11 +30,6 @@
                          :places           {}
                          :transitions     #{}}))
 
-(defn reset-nets
-  "Clear all nets and restore it to defaults."
-  []
-  (reset! nets {}))
-
 (defn- prefix-string
   "Add the network as a prefix for the input variable"
   [net input]
@@ -43,22 +38,22 @@
 (defn add-place
   "Adds a new place into an existing petri net."
   [net name tokens]
-  (swap! nets assoc-in [net :places (prefix-string net name)] tokens))
+  (swap! nets assoc-in [net :places name] tokens))
 
 (defn add-transition
   "Adds a new transition into an existing petri net."
   [net name]
-  (swap! nets update-in [net :transitions] #(union % #{(prefix-string net name)})))
+  (swap! nets update-in [net :transitions] #(clojure.set/union % #{name})))
 
 (defn add-edge-to-transition
   "Add an edge from a place to a transition."
   [net from to tokens]
-  (swap! nets assoc-in [net :edges-to-trans (prefix-string net from) (prefix-string net to)] tokens))
+  (swap! nets assoc-in [net :edges-to-trans from to] tokens))
 
 (defn add-edge-from-transition
   "Add an edge from a transition to a place."
   [net from to tokens]
-  (swap! nets assoc-in [net :edges-from-trans (prefix-string net from) (prefix-string net to)] tokens))
+  (swap! nets assoc-in [net :edges-from-trans from to] tokens))
 
 ;;;; Merging two nets
 
@@ -68,11 +63,25 @@
   [net1 net2 places transitions]
   (let [places-net1 (prewalk-replace places ((@nets net1) :places))
         places-net2 (prewalk-replace places ((@nets net2) :places))
-        merged-places      (merge ((@nets net1) :places)      ((@nets net2) :places))
-        merged-transitions (union ((@nets net1) :transitions) ((@nets net2) :transitions))]
+        merged-places      (merge ((@nets net1) :places) ((@nets net2) :places))
+        merged-transitions (clojure.set/union ((@nets net1) :transitions) ((@nets net2) :transitions))]
     (println places-net1)
     (println merged-places)
     (println merged-transitions)))
+
+(defn merge-places
+  "Takes the places from two nets and a map of places to be merged."
+  [pl-net1 pl-net2 pl-eq]
+  (let [rdy-pl-net1 (clojure.set/rename-keys pl-net1 pl-eq)]
+    (pprint rdy-pl-net1)
+    (pprint pl-net2)
+    (pprint (@nets :first))
+    (pprint (@nets :second))
+    )
+  )
+(merge-places ((@nets :first) :places) ((@nets :second) :places) {:a :z})
+
+(clojure.set/rename-keys {:a 1 :b 2} {:a :new-a :b :new-b})
 
 (merge-with max {} {})
 (merge-net :test :second {} {})
@@ -82,15 +91,15 @@
 
 ;;;; Testing area
 @nets
-(new-net :test)
-(reset-nets)
-(add-transition :test :bombe)
-(add-transition :test :bombi)
-(add-place :test :p 44)
-(add-edge-to-transition :test :p :bombe 41)
-(add-edge-to-transition :test :p :bombe2 43)
-(add-edge-to-transition :test :a :bombe 41)
-(add-edge-from-transition :test :bombe2 :p 22)
+(new-net :first)
+(add-transition :first :bombe)
+(add-transition :first :bombi)
+(add-place :first :p 44)
+(add-place :first :a 100)
+(add-edge-to-transition :first :p :bombe 41)
+(add-edge-to-transition :first :p :bombi 43)
+(add-edge-to-transition :first :a :bombe 41)
+(add-edge-from-transition :first :bombi :p 22)
 
 (new-net :second)
 (add-transition :second :foo)
