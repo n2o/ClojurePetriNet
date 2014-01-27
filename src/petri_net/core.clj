@@ -76,9 +76,7 @@
     (pprint rdy-pl-net1)
     (pprint pl-net2)
     (pprint (@nets :first))
-    (pprint (@nets :second))
-    )
-  )
+    (pprint (@nets :second))))
 (merge-places ((@nets :first) :places) ((@nets :second) :places) {:a :z})
 
 (clojure.set/rename-keys {:a 1 :b 2} {:a :new-a :b :new-b})
