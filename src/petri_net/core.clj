@@ -70,14 +70,24 @@
     (println merged-transitions)))
 
 (defn merge-places
-  "Takes the places from two nets and a map of places to be merged."
-  [pl-net1 pl-net2 pl-eq]
-  (let [rdy-pl-net1 (clojure.set/rename-keys pl-net1 pl-eq)]
-    (pprint rdy-pl-net1)
-    (pprint pl-net2)
-    (pprint (@nets :first))
-    (pprint (@nets :second))))
-(merge-places ((@nets :first) :places) ((@nets :second) :places) {:a :z})
+  "Takes the places from two nets and a map of places to be merged. Prefixes unmatched places."
+  [pl-net1 pl-net2 equal]
+  (let [replace-pl-net1 (clojure.set/rename-keys pl-net1 equal)
+        prefix-pl-net1  (prefix-places pl-net1 equal)]
+    (prn replace-pl-net1)
+    (prn prefix-pl-net1)
+    
+    ))
+
+(merge-places ((@nets :first) :places) ((@nets :second) :places) {:a :jo})
+
+
+(defn prefix-places [net equal places]
+  (let [filtered (filter (fn [[k v]] (not (contains? equal v))) places)]
+    (prefix-string net filtered)))
+
+@nets
+(bla {:a :b})
 
 (clojure.set/rename-keys {:a 1 :b 2} {:a :new-a :b :new-b})
 
