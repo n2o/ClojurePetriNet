@@ -133,11 +133,12 @@
   (merge-edges-from-trans :first ((@nets :first) :edges-from-trans) ((@nets :second) :edges-from-trans) {} {:bombi :foo}))
 
 (defn- merge-transitions
-  "Takes sets of transitions from two nets and merges them."
+  "Takes sets of transitions from two nets and merges them. I translate the set from net1 into
+  a hash map to use the function merge-places. Then I reduce them again to normal sets."
   [net1 trans-net1 trans-net2 equal]
-  (let [to-map (map #(hash-map % 0) trans-net1)]
-    (pprint to-map)
-    ))
+  (let [map-net1      (apply merge (map #(hash-map % 0) trans-net1))
+        prefixed-net1 (merge-places net1 map-net1 {} equal)]
+    (clojure.set/union (set (keys prefixed-net1)) trans-net2)))
 
 (merge-transitions :first ((@nets :first) :transitions) ((@nets :second) :transitions) {})
 
