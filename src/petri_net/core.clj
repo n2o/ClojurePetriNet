@@ -1,9 +1,6 @@
 (ns petri-net.core
   (:gen-class))
 
-;; Kill this and add better solution later on
-(use '[clojure.walk :only [prewalk-replace]])
-
 ;; Store all nets into nets
 ;; Each entry symbolizes one net in this program. It is structured as
 ;; follows:
@@ -52,13 +49,13 @@
 
 (defn add-edge-to-transition
   "Add an edge from a place to a transition."
-  [net from to tokens]
-  (swap! nets assoc-in [net :edges-to-trans from to] tokens))
+  [net from to]
+  (swap! nets assoc-in [net :edges-to-trans from] to))
 
 (defn add-edge-from-transition
   "Add an edge from a transition to a place."
-  [net from to tokens]
-  (swap! nets assoc-in [net :edges-from-trans from to] tokens))
+  [net from to]
+  (swap! nets assoc-in [net :edges-from-trans from] to))
 
 
 ;;;; Merging two nets
@@ -147,7 +144,7 @@
   "Merging two nets and define which places / transitions should be merged.
    Places and Transitions must be key-value pairs."
   [net1 net2 equal-places equal-trans]
-  (let [name        (str net1 "#" net2)
+  (let [name            (str net1 "#" net2)
         places-net1     ((@nets net1) :places)
         places-net2     ((@nets net2) :places)
         edges-to-net1   ((@nets net1) :edges-to-trans)
@@ -157,19 +154,18 @@
         trans-net1      ((@nets net1) :transitions)
         trans-net2      ((@nets net2) :transitions)
         merged-places           (merge-places net1 places-net1 places-net2 equal-places)
-        merged-edges-to-trans   (merge-edges-to-trans   net1 edges-to-net1   edges-to-net1   equal-places equal-trans)
+        merged-edges-to-trans   (merge-edges-to-trans   net1 edges-to-net1   edges-to-net2   equal-places equal-trans)
         merged-edges-from-trans (merge-edges-from-trans net1 edges-from-net1 edges-from-net2 equal-places equal-trans)
         merged-transitions      (merge-transitions net1 trans-net1 trans-net2 equal-trans)]
     (new-net name)
-    (doall (map #(add-transition name %) merged-transitions))
-    
-    ;(print (clojure.set/union ((@nets name) :transitions) merged-transitions))
-    ;(map add-place net-name merged-places)
-    ;(add-edge-to-transition net-name merged-edges-to-trans)
-    ))
+    (doall (map (fn [trans] (add-transition name trans)) merged-transitions))
+    (doall (map (fn [[k v]] (add-place name k v)) merged-places))
+    (doall (map (fn [[k v]] (add-edge-to-transition name k v)) merged-edges-to-trans))
+    (doall (map (fn [[k v]] (add-edge-from-transition name k v)) merged-edges-from-trans))))
 (do
-  (merge-net :first :second {} {})
+  (merge-net :first :second {} {:bombe :foo})
   (pprint @nets))
+
 
 
 ;;;; Testing area
@@ -180,14 +176,14 @@
     (add-place :first :p 44)
     (add-place :first :a 100)
     (add-place :first :z 42)
-    (add-edge-to-transition :first :p :bombe 41)
-    (add-edge-to-transition :first :p :bombi 43)
-    (add-edge-to-transition :first :z :bombe 4)
-    (add-edge-from-transition :first :bombi :a 22)
+    (add-edge-to-transition :first :p {:bombe 41})
+    (add-edge-to-transition :first :p {:bombi 43})
+    (add-edge-to-transition :first :z {:bombe 4})
+    (add-edge-from-transition :first :bombi {:a 22})
 
     (new-net :second)
     (add-transition :second :foo)
     (add-place :second :q 22)
     (add-place :second :a 55)
-    (add-edge-to-transition :second :q :foo 1)
-    (add-edge-from-transition :second :foo :a 3))
+    (add-edge-to-transition :second :q {:foo 1})
+    (add-edge-from-transition :second :foo {:a 3}))
