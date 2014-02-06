@@ -142,51 +142,34 @@
 
 (merge-transitions :first ((@nets :first) :transitions) ((@nets :second) :transitions) {})
 
-(map #(hash-map % 0) (seq [:a :b]))
-
-(assoc {} [:a :b] [0 0])
-[:a :b] [:c :d]
-{:a :c, :b :d}
-
-
-
-
-(defn- prefix-unmatched-vec
-  "Takes a set 'set' and a map 'equal' which addresses the places to be merged.
-  Then filter all the places, which are NOT in equal to prefix them with the net name."
-  [net set equal]
-  (let [foo (for [entry set] entry)
-        filtered (vec (filter #(not (contains? equal %)) foo))
-        nofilter (vec (filter #(contains? equal %) foo))]
-    ;(merge (vec-to-map nofilter) (vec-to-map-prefix net filtered))
-    ))
-
-
-
-
-
-
-
-
-
-
 
 (defn merge-net
   "Merging two nets and define which places / transitions should be merged.
    Places and Transitions must be key-value pairs."
   [net1 net2 equal-places equal-trans]
-  (let [places-net1     ((@nets net1) :places)
+  (let [name        (str net1 "#" net2)
+        places-net1     ((@nets net1) :places)
         places-net2     ((@nets net2) :places)
         edges-to-net1   ((@nets net1) :edges-to-trans)
         edges-to-net2   ((@nets net2) :edges-to-trans)
         edges-from-net1 ((@nets net1) :edges-from-trans)
         edges-from-net2 ((@nets net2) :edges-from-trans)
+        trans-net1      ((@nets net1) :transitions)
+        trans-net2      ((@nets net2) :transitions)
         merged-places           (merge-places net1 places-net1 places-net2 equal-places)
         merged-edges-to-trans   (merge-edges-to-trans   net1 edges-to-net1   edges-to-net1   equal-places equal-trans)
-        merged-edges-from-trans (merge-edges-from-trans net1 edges-from-net1 edges-from-net2 equal-places equal-trans)]
-    (println merged-places)))
-
-(merge-net :first :second {:a :q} {})
+        merged-edges-from-trans (merge-edges-from-trans net1 edges-from-net1 edges-from-net2 equal-places equal-trans)
+        merged-transitions      (merge-transitions net1 trans-net1 trans-net2 equal-trans)]
+    (new-net name)
+    (doall (map #(add-transition name %) merged-transitions))
+    
+    ;(print (clojure.set/union ((@nets name) :transitions) merged-transitions))
+    ;(map add-place net-name merged-places)
+    ;(add-edge-to-transition net-name merged-edges-to-trans)
+    ))
+(do
+  (merge-net :first :second {} {})
+  (pprint @nets))
 
 
 ;;;; Testing area
