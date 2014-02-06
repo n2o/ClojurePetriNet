@@ -60,7 +60,94 @@
   [net from to tokens]
   (swap! nets assoc-in [net :edges-from-trans from to] tokens))
 
+
 ;;;; Merging two nets
+
+(defn- vec-to-map
+  "Takes an vector of vectors and translates it into a hash-map.
+  For example: [[:a 2] [:b 3]] => {:a 2, :b 3}"
+  [input]
+  (apply merge (map #(hash-map (first %) (second %)) input)))
+
+(defn- vec-to-map-prefix
+  "Takes an vector of vectors and translates it into a hash-map with prefixed keys.
+  For example: [[:a 2] [:b 3]] => {:prefix#:a 2, :prefix#:b 3}"
+  [net input]
+  (apply merge (map #(hash-map (prefix-string net (first %)) (second %)) input)))
+
+(defn prefix-unmatched
+  "Takes a set of 'places' and a map 'equal' which addresses the places to be merged.
+  Then filter all the places, which are NOT in equal to prefix them with the net name."
+  [net places equal]
+  (let [filtered (vec (filter (fn [[k v]] (not (contains? equal k))) places))
+        nofilter (vec (filter (fn [[k v]] (contains? equal k)) places))]
+    (merge (vec-to-map nofilter) (vec-to-map-prefix net filtered))))
+
+(prefix-unmatched :first ((@nets :first) :edges-from-trans) {})
+
+
+(defn- merge-places
+  "Takes the places from two nets and a map of places to be merged. Prefixes unmatched places.
+  For example:
+    equal:      {:a :q}
+    first net:  {:a 100, :p 4}
+    second net: {:a 55,  :q 22}
+  returns: {:first#:p 4, :a 55, :q 100}"
+  [net1 set-net1 set-net2 equal]
+  (let [prefix-set-net1 (prefix-unmatched net1 set-net1 equal)
+        rename-set-net1 (clojure.set/rename-keys prefix-set-net1 equal)]
+    (merge-with max rename-set-net1 set-net2)))
+
+(do
+  (pprint @nets) (println)
+  (merge-places :first ((@nets :first) :places) ((@nets :second) :places) {}))
+
+
+(defn merge-edges-to-trans
+  "Merging the edges from places to transitions.
+  Takes net1 for prefix and the edges-to-trans from both nets."
+  [net1 edges-to-net1 edges-to-net2 equal-places equal-trans]
+  (let
+      [merged-edges (merge-places net1 edges-to-net1 edges-to-net2 equal-places)]
+    (println)
+    (pprint merged-edges)
+    (println "\n" (vals edges-to-net1) "###" (vals edges-to-net2))))
+
+(do (pprint @nets)
+ (merge-edges-to-trans :first ((@nets :first) :edges-to-trans) ((@nets :second) :edges-to-trans) {} {:bombe :foo}))
+
+
+(defn merge-edges-from-trans
+  "Prefixes "
+  [net1 edges-net1 edges-net2 equal-places equal-trans]
+  (let [prefix-edges-net1 (prefix-unmatched net1 edges-net1 equal-trans)
+        rename-edges-net1 (clojure.set/rename-keys prefix-edges-net1 equal-trans)
+        ready-edges-net1 (vec-to-map (for [[k v] rename-edges-net1] [k (prefix-unmatched net1 v equal-places)]))
+        ]
+    (merge-with merge ready-edges-net1 edges-net2)
+    ))
+
+(do
+  (pprint @nets) (println)
+  (merge-edges-from-trans :first ((@nets :first) :edges-from-trans) ((@nets :second) :edges-from-trans) {} {:bombi :foo}))
+
+
+
+(defn deep-merge-with
+  "Like merge-with, but merges maps recursively, applying the given fn
+  only when there's a non-map at a particular level.
+  (deepmerge + {:a {:b {:c 1 :d {:x 1 :y 2}} :e 3} :f 4}
+               {:a {:b {:c 2 :d {:z 9} :z 3} :e 100}})
+  -> {:a {:b {:z 3, :c 3, :d {:z 9, :x 1, :y 2}}, :e 103}, :f 4}"
+  [f & maps]
+  (apply
+   (fn m [& maps]
+     (if (every? map? maps)
+       (apply merge-with m maps)
+       (apply f maps)))
+   maps))
+
+
 
 (defn merge-net
   "Merging two nets and define which places / transitions should be merged.
@@ -77,69 +164,25 @@
 (@nets :first)
 (println (for [[k v] ((@nets :first) :edges-from-trans)] v))
 
-(defn merge-edges-to-trans
-  "Merging the edges from places to transitions. Takes net1 for prefix and the edges-to-trans
-  from both nets."
-  [net edges-to-net1 edges-to-net2 equal-places equal-trans]
-  
-  )
-
-(defn merge-places
-  "Takes the places from two nets and a map of places to be merged. Prefixes unmatched places.
-  For example:
-    first net:  {:a 100, :p 4}
-    second net: {:a 55,  :q 22}
-  returns: {:first#:p 4, :a 55, :q 100}"
-  [net1 pl-net1 pl-net2 equal]
-  (let [prefix-pl-net1 (prefix-unmatched net1 pl-net1 equal)
-        rename-pl-net1 (clojure.set/rename-keys prefix-pl-net1 equal)]
-    (merge-with max rename-pl-net1 pl-net2)))
-
-(merge-places :first ((@nets :first) :places) ((@nets :second) :places) {:a :q})
-
-(defn prefix-unmatched
-  "Takes a set of 'places' and a map 'equal' which addresses the places to be merged.
-  Then filter all the places, which are NOT in equal to prefix them with the net name."
-  [net places equal]
-  (let [filtered (vec (filter (fn [[k v]] (not (contains? equal k))) places))
-        nofilter (vec (filter (fn [[k v]] (contains? equal k)) places))]
-    (merge (vec-to-map nofilter) (vec-to-map-prefix net filtered))))
-
-(prefix-places :first ((@nets :first) :edges-from-trans) {})
-
-(defn- vec-to-map
-  "Takes an vector of vectors and translates it into a hash-map.
-  For example: [[:a 2] [:b 3]] => {:a 2, :b 3}"
-  [input]
-  (apply merge (map #(hash-map (first %) (second %)) input)))
-
-(defn- vec-to-map-prefix
-  "Takes an vector of vectors and translates it into a hash-map with prefixed keys.
-  For example: [[:a 2] [:b 3]] => {:prefix#:a 2, :prefix#:b 3}"
-  [net input]
-  (apply merge (map #(hash-map (prefix-string net (first %)) (second %)) input)))
-
-
-
-
-
-
 ;;(prewalk-replace {:a :b} {:a {:bombe 41}, :p {:bombe2 43, :bombe 41}})
 
 
 ;;;; Testing area
 @nets
-(new-net :first)
-(add-transition :first :bombe)
-(add-transition :first :bombi)
-(add-place :first :p 44)
-(add-place :first :a 100)
-(add-edge-to-transition :first :p :bombe 41)
-(add-edge-to-transition :first :p :bombi 43)
-(add-edge-from-transition :first :bombi :a 22)
+(do (new-net :first)
+    (add-transition :first :bombe)
+    (add-transition :first :bombi)
+    (add-place :first :p 44)
+    (add-place :first :a 100)
+    (add-place :first :z 42)
+    (add-edge-to-transition :first :p :bombe 41)
+    (add-edge-to-transition :first :p :bombi 43)
+    (add-edge-to-transition :first :z :bombe 4)
+    (add-edge-from-transition :first :bombi :a 22)
 
-(new-net :second)
-(add-transition :second :foo)
-(add-place :second :q 22)
-(add-place :second :a 55)
-(add-edge-to-transition :second :q :foo 1)
+    (new-net :second)
+    (add-transition :second :foo)
+    (add-place :second :q 22)
+    (add-place :second :a 55)
+    (add-edge-to-transition :second :q :foo 1)
+    (add-edge-from-transition :second :foo :a 3))
