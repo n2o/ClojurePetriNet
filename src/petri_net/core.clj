@@ -27,15 +27,15 @@
                          :places           {}
                          :transitions     #{}}))
 
+(defn delete-net
+  "Removes one net including all data from the database 'nets'."
+  [net]
+  (swap! nets dissoc net))
+
 (defn- prefix-string
   "Add the network as a prefix for the input variable."
   [net input]
   (str net "#" input))
-
-(defn- prefix-string-vec
-  "Add the network as a prefix for each entry in a vector"
-  [net input]
-  (for [entry input] (str net "#" entry)))
 
 (defn add-place
   "Adds a new place into an existing petri net."
@@ -165,8 +165,6 @@
 (do
   (merge-net :first :second {} {:bombe :foo})
   (pprint @nets))
-
-
 
 ;;;; Testing area
 @nets
