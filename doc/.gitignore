@@ -1,0 +1,4 @@
+*.fdb_latexmk
+*.synctex.gz
+*.aux
+*.log
