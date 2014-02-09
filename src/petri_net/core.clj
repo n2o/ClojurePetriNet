@@ -20,7 +20,7 @@
 ;;;; Basic functions
 
 (defn new-net
-  "Adds a new net to nets and associates it with the name."
+  "Adds a new net to 'nets' and associates it with the name."
   [net]
   (swap! nets assoc net {:edges-from-trans {}
                          :edges-to-trans   {}
@@ -28,7 +28,7 @@
                          :transitions     #{}}))
 
 (defn- prefix-string
-  "Add the network as a prefix for the input variable"
+  "Add the network as a prefix for the input variable."
   [net input]
   (str net "#" input))
 
@@ -187,3 +187,4 @@
     (add-place :second :a 55)
     (add-edge-to-transition :second :q {:foo 1})
     (add-edge-from-transition :second :foo {:a 3}))
+ 
