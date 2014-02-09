@@ -18,7 +18,7 @@
 %	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
 %----------------------------------------------------------------------------------------
 
-\documentclass[DIV=calc, paper=a4, fontsize=11pt, twocolumn]{scrartcl}	 % A4 paper and 11pt font size
+\documentclass[DIV=calc, paper=a4, fontsize=12pt, twocolumn]{scrartcl}
 
 \usepackage{lipsum} % Used for inserting dummy 'Lorem ipsum' text into the template
 \usepackage[german]{babel}
@@ -102,13 +102,12 @@ Heinrich-Heine-Universität Düsseldorf % Your institution
 
 \section{Architekturentscheidungen}
 
-\lipsum[1] % Dummy text
-
 %------------------------------------------------
 
 \subsection{core.clj}
 
-\lipsum[1] % Dummy text
+\paragraph{Keine Kontrolle auf valide Eingaben} Um die Funktionen möglichst simple zu halten, wird in core.clj bzw. der Ausführung in der REPL darauf verzichtet zu überprüfen, ob die Ausführung einer Funktion möglich ist. Die Überprüfung erscheint mir an dieser Stelle nicht sinnvoll und möchte die Verantwortung dafür an den Benutzer selbst abgeben.\par
+Das bedeutet \emph{nicht}, dass gar keine Überprüfung stattfinden wird. Die GUI wird später auf Funktionen zurückgreifen, die vorher sicherstellt, dass die gewünschte Aktion möglich ist.
 
 %------------------------------------------------
 

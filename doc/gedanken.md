@@ -22,12 +22,12 @@ Nun wurde die Funktion ein wenig abgeändert und es wird eine fertige Map von {T
   (swap! nets assoc-in [net :edges-to-trans from] to))
 ```
 
-So kann beim Mergen von Netzen mit einem einfachen Map alle Transitionen in ein neues Netz kopiert werden.
+So können beim Mergen von Netzen mit einem einfachen Map alle Transitionen in ein neues Netz kopiert werden.
 
 
 ## Attribute NetAlive, TransitionAlive, NonEmpty, Not, Or
 *09.02.14*
-
+Die erste Idee ist, alle Attribute in die Datenbank @nets zum jeweiligen Netz zu speichern.
 
 
 # GUI
@@ -35,4 +35,4 @@ So kann beim Mergen von Netzen mit einem einfachen Map alle Transitionen in ein 
 *09.02.14*
 Da JavaFX vielversprechend klingt und sich einiges vereinfacht haben soll, wollte ich mir JavaFX anschauen. Allerdings finde ich zur Benutzung in Clojure kaum etwas im Internet und als ich es geschafft habe mir selbst ein kleine Beispiel zusammen zu basteln, war die Interaktion mit der REPL quasi nicht gegeben (erst nach dem Schließen der GUI wurden die Befehle übertragen) und im Anschluss wurde die REPL gekillt -.- .
 
-Nun versuche ich mich an SeeSaw.
+Nun versuche ich mich an SeeSaw...
