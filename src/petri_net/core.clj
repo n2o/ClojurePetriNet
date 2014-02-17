@@ -1,5 +1,6 @@
 (ns petri-net.core
-  (:gen-class))
+  (:gen-class)
+  (:require [clojure.set]))
 
 ;; Store all nets into nets
 ;; Each entry symbolizes one net in this program. It is structured as
@@ -44,19 +45,10 @@
 
 
 ;;;; Auxiliary functions
-
 (defn- prefix-string
   "Add the network as a prefix for the input variable."
   [net input]
   (str net "#" input))
-
-(defn- prefix-unmatched
-  "Takes a set 'set' and a map 'equal' which addresses the places to be merged.
-  Then filter all the places, which are NOT in equal to prefix them with the net name."
-  [net set equal]
-  (let [filtered (vec (filter (fn [[k v]] (not (contains? equal k))) set))
-        nofilter (vec (filter (fn [[k v]] (contains? equal k)) set))]
-    (merge (vec-to-map nofilter) (vec-to-map-prefix net filtered))))
 
 (defn- vec-to-map
   "Takes an vector of vectors and translates it into a hash-map.
@@ -70,6 +62,13 @@
   [net input]
   (apply merge (map #(hash-map (prefix-string net (first %)) (second %)) input)))
 
+(defn- prefix-unmatched
+  "Takes a set 'set' and a map 'equal' which addresses the places to be merged.
+  Then filter all the places, which are NOT in equal to prefix them with the net name."
+  [net set equal]
+  (let [filtered (vec (filter (fn [[k v]] (not (contains? equal k))) set))
+        nofilter (vec (filter (fn [[k v]] (contains? equal k)) set))]
+    (merge (vec-to-map nofilter) (vec-to-map-prefix net filtered))))
 
 ;;;; Manipulate specific net/nets
 
@@ -136,7 +135,7 @@
         prefixed-net1 (merge-places net1 map-net1 {} equal)]
     (clojure.set/union (set (keys prefixed-net1)) trans-net2)))
 
-(merge-transitions :first ((@nets :first) :transitions) ((@nets :second) :transitions) {})
+;(merge-transitions :first ((@nets :first) :transitions) ((@nets :second) :transitions) {})
 
 
 (defn merge-net
@@ -164,26 +163,25 @@
 
 
 ;;;; Testing area
-@nets
-(do (new-net :first)
-    (add-transition :first :bombe)
-    (add-transition :first :bombi)
-    (add-place :first :p 44)
-    (add-place :first :a 100)
-    (add-place :first :z 42)
-    (add-edge-to-transition :first :p {:bombe 41})
-    (add-edge-to-transition :first :p {:bombi 43})
-    (add-edge-to-transition :first :z {:bombe 4})
-    (add-edge-from-transition :first :bombi {:a 22})
+(def init-two-nets (do (new-net :first)
+                       (add-transition :first :bombe)
+                       (add-transition :first :bombi)
+                       (add-place :first :p 44)
+                       (add-place :first :a 100)
+                       (add-place :first :z 42)
+                       (add-edge-to-transition :first :p {:bombe 41})
+                       (add-edge-to-transition :first :p {:bombi 43})
+                       (add-edge-to-transition :first :z {:bombe 4})
+                       (add-edge-from-transition :first :bombi {:a 22})
 
-    (new-net :second)
-    (add-transition :second :foo)
-    (add-place :second :q 22)
-    (add-place :second :a 55)
-    (add-edge-to-transition :second :q {:foo 1})
-    (add-edge-from-transition :second :foo {:a 3}))
+                       (new-net :second)
+                       (add-transition :second :foo)
+                       (add-place :second :q 22)
+                       (add-place :second :a 55)
+                       (add-edge-to-transition :second :q {:foo 1})
+                       (add-edge-from-transition :second :foo {:a 3})))
 
 ;; Merge two nets, get a new merged one added to 'nets'
-(do
-  (merge-net :first :second {} {:bombe :foo})
-  (pprint @nets))
+;(do
+;  (merge-net :first :second {} {:bombe :foo})
+;  (pprint @nets))
