@@ -1,5 +1,4 @@
 (ns petri-net.core
-  (:gen-class)
   (:require [clojure.set]))
 
 ;; Store all nets into nets
@@ -180,7 +179,7 @@
                        (add-place :second :a 55)
                        (add-edge-to-transition :second :q {:foo 1})
                        (add-edge-from-transition :second :foo {:a 3})))
-
+init-two-nets
 ;; Merge two nets, get a new merged one added to 'nets'
 ;(do
 ;  (merge-net :first :second {} {:bombe :foo})

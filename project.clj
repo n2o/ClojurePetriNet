@@ -7,4 +7,6 @@
                  [seesaw "1.4.2"]]
   :main ^:skip-aot petri-net.view
   :target-path "target/%s"
-  :profiles {:uberjar {:aot :all}})
+  :profiles {:uberjar {:aot :all}
+             :dev {:dependencies [[midje "1.6.2"]]
+                   :plugins [[lein-midje "3.1.3"]]}})

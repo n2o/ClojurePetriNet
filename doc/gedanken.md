@@ -35,4 +35,13 @@ Die erste Idee ist, alle Attribute in die Datenbank @nets zum jeweiligen Netz zu
 *09.02.14*
 Da JavaFX vielversprechend klingt und sich einiges vereinfacht haben soll, wollte ich mir JavaFX anschauen. Allerdings finde ich zur Benutzung in Clojure kaum etwas im Internet und als ich es geschafft habe mir selbst ein kleine Beispiel zusammen zu basteln, war die Interaktion mit der REPL quasi nicht gegeben (erst nach dem Schließen der GUI wurden die Befehle übertragen) und im Anschluss wurde die REPL gekillt -.- .
 
-Nun versuche ich mich an SeeSaw...
+Mittlerweile glaube ich, dass das an der EMACS Cider REPL lag.
+
+*17.02.14*
+Seesaw ist super! In wenigen Schritten konnte zumindest das erste Fenster implementiert werden.
+
+Für die GUI werde ich eine API schreiben, welche einfache Funktionen bereitstellt, die die GUI dann visuell darstellen kann. Dadurch trenne ich die Arbeit auf den Atomen in der GUI und liefere nur genau das, was benötigt wird.
+
+# API
+*17.02.14*
+Arbeitet auf dem Core und liefert Daten aus den Atomen.

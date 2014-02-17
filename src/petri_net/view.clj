@@ -4,4 +4,4 @@
   (:require [petri-net.core :as core]))
 
 (defn -main [& args]
-  (-> (frame :title "Wow") pack! show!))
+  (-> (frame :title "Wow" :on-close :exit) pack! show!))

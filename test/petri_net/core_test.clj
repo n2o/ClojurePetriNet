@@ -1,7 +1,3 @@
 (ns petri-net.core-test
-  (:require [clojure.test :refer :all]
-            [petri-net.core :refer :all]))
-
-(deftest a-test
-  (testing "FIXME, I fail."
-    (is (= 0 1))))
+  (:use [petri-net.core :refer :all])
+  (:use [midje.sweet])) 
