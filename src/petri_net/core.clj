@@ -44,24 +44,24 @@
 
 
 ;;;; Auxiliary functions
-(defn- prefix-string
+(defn prefix-string
   "Add the network as a prefix for the input variable."
   [net input]
   (str net "#" input))
 
-(defn- vec-to-map
+(defn vec-to-map
   "Takes an vector of vectors and translates it into a hash-map.
   For example: [[:a 2] [:b 3]] => {:a 2, :b 3}"
   [input]
   (apply merge (map #(hash-map (first %) (second %)) input)))
 
-(defn- vec-to-map-prefix
+(defn vec-to-map-prefix
   "Takes an vector of vectors and translates it into a hash-map with prefixed keys.
   For example: [[:a 2] [:b 3]] => {:prefix#:a 2, :prefix#:b 3}"
   [net input]
   (apply merge (map #(hash-map (prefix-string net (first %)) (second %)) input)))
 
-(defn- prefix-unmatched
+(defn prefix-unmatched
   "Takes a set 'set' and a map 'equal' which addresses the places to be merged.
   Then filter all the places, which are NOT in equal to prefix them with the net name."
   [net set equal]
@@ -94,7 +94,7 @@
 
 ;;;; Merging two nets
 
-(defn- merge-places
+(defn merge-places
   "Takes the places from two nets and a map of places to be merged. Prefixes unmatched places.
   For example:
     equal:      {:a :q}
@@ -106,7 +106,7 @@
         rename-set-net1 (clojure.set/rename-keys prefix-set-net1 equal)]
     (merge-with max rename-set-net1 set-net2)))
 
-(defn- merge-edges-to-trans
+(defn merge-edges-to-trans
   "Merging the edges from places to transitions.
   Takes net1 for prefix and the edges-to-trans from both nets."
   [net1 edges-net1 edges-net2 equal-places equal-trans]
@@ -117,7 +117,7 @@
                              [k (clojure.set/rename-keys (prefix-unmatched net1 v equal-trans) equal-trans)]))]
     (merge-with merge ready-edges-net1 edges-net2)))
 
-(defn- merge-edges-from-trans
+(defn merge-edges-from-trans
   "Merges edges from transitions to places from two nets. Prefixes those places and transitions which
   should be merged."
   [net1 edges-net1 edges-net2 equal-places equal-trans]
@@ -126,15 +126,13 @@
         ready-edges-net1  (vec-to-map (for [[k v] rename-edges-net1] [k (prefix-unmatched net1 v equal-places)]))]
     (merge-with merge ready-edges-net1 edges-net2)))
 
-(defn- merge-transitions
+(defn merge-transitions
   "Takes sets of transitions from two nets and merges them. I translate the set from net1 into
   a hash map to use the function merge-places. Then I reduce them again to normal sets."
   [net1 trans-net1 trans-net2 equal]
   (let [map-net1      (apply merge (map #(hash-map % 0) trans-net1))
         prefixed-net1 (merge-places net1 map-net1 {} equal)]
     (clojure.set/union (set (keys prefixed-net1)) trans-net2)))
-
-;(merge-transitions :first ((@nets :first) :transitions) ((@nets :second) :transitions) {})
 
 
 (defn merge-net
@@ -180,6 +178,7 @@
                        (add-edge-to-transition :second :q {:foo 1})
                        (add-edge-from-transition :second :foo {:a 3})))
 init-two-nets
+(merge-transitions :first ((@nets :first) :transitions) ((@nets :second) :transitions) {:bombe :foo})
 ;; Merge two nets, get a new merged one added to 'nets'
 ;(do
 ;  (merge-net :first :second {} {:bombe :foo})
