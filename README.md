@@ -4,19 +4,6 @@ FIXME: description
 
 ## Installation
 
-Set up JavaFX with Maven:
-
-```> mvn install:install-file -Dfile=/Library/Java/JavaVirtualMachines/jdk1.7.0_51.jdk/Contents/Home/jre/lib/jfxrt.jar -DgroupId=com.oracle -DartifactId=javafx-runtime -Dpackaging=jar -Dversion=2.2.0```
-
-Old version, don't know if this works...
-```> mvn deploy:deploy-file -DgroupId=local.oracle -DartifactId=javafxrt -Dversion=2.2.0 -Dpackaging=jar -Dfile=/Library/Java/JavaVirtualMachines/jdk1.7.0_51.jdk/Contents/Home/jre/lib/jfxrt.jar -Durl=file:/Users/USERNAME/.m2/repository```
-
-Then type:
-
-```> lein deps```
-
-
-
 
 ## Usage
 
