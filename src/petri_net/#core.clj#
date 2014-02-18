@@ -177,11 +177,6 @@
                        (add-edge-from-transition :second :foo {:a 3})))
 init-two-nets
 
-(defn transition-alive
-  "Takes the current net and a variable number of transitions and checks if one of the transitions are alive."
-  [& ts]
-  
-  )
 ;; Merge two nets, get a new merged one added to 'nets'
 ;(do
 ;  (merge-net :first :second {} {:bombe :foo})

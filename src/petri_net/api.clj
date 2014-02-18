@@ -2,7 +2,11 @@
   (:require [petri-net.core :as controller]))
 
 controller/nets
-(def get-nets controller/nets)
-get-nets
-(defn get-net [net] (println net))
-(get-net :first)
+
+(def nets controller/nets)
+nets
+
+(defn net [net] (net @nets))
+(net :first)
+
+
