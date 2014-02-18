@@ -1,13 +1,8 @@
 (ns petri-net.api
-  (:require [petri-net.core :as controller]))
+  (:require [petri-net.core :as controller])
+  (:use clojure.algo.monads))
 
 ;;;; Retrieve information from controller
-
-(defn net?
-  "Returns true if the net exists in the database and falsey if not."
-  [net]
-  (when-not (number? net)
-    (not (nil? (get-net net)))))
 
 (def get-nets controller/nets)
 get-nets
@@ -17,6 +12,12 @@ get-nets
   [net]
   (when (net @get-nets) (net @get-nets)))
 (get-net :first)
+
+(defn net?
+  "Returns true if the net exists in the database and falsey if not."
+  [net]
+  (when-not (number? net)
+    (domonad maybe-m [ret (get-net net)] ret)))
 
 (defn get-edges-to-trans
   "Returns edges from places to transitions for a specific net if possible, else nil."

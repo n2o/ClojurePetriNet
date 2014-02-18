@@ -19,7 +19,8 @@
 (facts "Transforming a vector of vectors to a map."
   (fact "This should work."
     (controller/vec-to-map [[:a 2] [:b 3]]) => {:a 2, :b 3}
-    (controller/vec-to-map [[:c 4]]) => {:c 4}))
+    (controller/vec-to-map [[:c 4]]) => {:c 4}
+    (controller/vec-to-map '([:c 4])) => {:c 4}))
 
 (facts "Transforming a vector of vectors to a map incl. prefixing."
   (fact "Working."
