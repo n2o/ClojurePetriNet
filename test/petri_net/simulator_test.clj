@@ -1,4 +1,4 @@
-(ns petri-net.core-test
+(ns petri-net.simulator-test
   (:require [petri-net.api :as api])
   (:use [midje.sweet])) 
 
@@ -16,6 +16,4 @@
 
 ;;;; Facts about the attributes
 
-(facts "Check if transition is alive"
-  (fact "Working"
-    (controller/transition-alive :foo) => nil))
+

@@ -72,12 +72,12 @@
 ;;;; Manipulate specific net/nets
 
 (defn add-place
-  "Adds a new place into an existing petri net."
+  "Add a place to a net. Checks if the name placename is already taken. If yes, update entry in database." 
   [net name tokens]
   (swap! nets assoc-in [net :places name] tokens))
 
 (defn add-transition
-  "Adds a new transition into an existing petri net."
+  "Adds a new transition into a petri net."
   [net name]
   (swap! nets update-in [net :transitions] #(clojure.set/union % #{name})))
 
