@@ -45,3 +45,8 @@ Für die GUI werde ich eine API schreiben, welche einfache Funktionen bereitstel
 # API
 *17.02.14*
 Arbeitet auf dem Core und liefert Daten aus den Atomen.
+
+*18.02.14*
+
+# Simulator
+*18.02.14*

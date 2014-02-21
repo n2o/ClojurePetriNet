@@ -13,7 +13,7 @@
 ;; edges-from-trans : key is :from, seems to be a good idea
 ;; edges-to-trans   : key is :to, seems to be a good idea
 ;; places           : adds a new place into the net and stores tokens
-;; transitions      : a set of transitions 
+;; transitions      : a set of transitions
 
 (def nets (atom {}))
 
@@ -72,7 +72,7 @@
 ;;;; Manipulate specific net/nets
 
 (defn add-place
-  "Add a place to a net. Checks if the name placename is already taken. If yes, update entry in database." 
+  "Add a place to a net. Checks if the name placename is already taken. If yes, update entry in database."
   [net name tokens]
   (swap! nets assoc-in [net :places name] tokens))
 
@@ -95,12 +95,7 @@
 ;;;; Merging two nets
 
 (defn merge-places
-  "Takes the places from two nets and a map of places to be merged. Prefixes unmatched places.
-  For example:
-    equal:      {:a :q}
-    first net:  {:a 100, :p 4}
-    second net: {:a 55,  :q 22}
-  returns: {:prefix#:p 4, :a 55, :q 100}"
+  "Takes the places from two nets and a map of places to be merged. Prefixes unmatched places."
   [net1 set-net1 set-net2 equal]
   (let [prefix-set-net1 (prefix-unmatched net1 set-net1 equal)
         rename-set-net1 (clojure.set/rename-keys prefix-set-net1 equal)]
