@@ -25,7 +25,8 @@
   (swap! nets assoc net {:edges-from-trans {}
                          :edges-to-trans   {}
                          :places           {}
-                         :transitions     #{}}))
+                         :transitions     #{}
+                         :props            {}}))
 
 (defn delete-net
   "Removes one net including all data from the database 'nets'."
@@ -83,13 +84,13 @@
 
 (defn add-edge-to-transition
   "Add an edge from a place to a transition."
-  [net from to]
-  (swap! nets assoc-in [net :edges-to-trans from] to))
+  [net from to tokens]
+  (swap! nets assoc-in [net :edges-to-trans from to] tokens))
 
 (defn add-edge-from-transition
   "Add an edge from a transition to a place."
-  [net from to]
-  (swap! nets assoc-in [net :edges-from-trans from] to))
+  [net from to tokens]
+  (swap! nets assoc-in [net :edges-from-trans from to] tokens))
 
 
 ;;;; Merging two nets
@@ -133,7 +134,7 @@
   "Merging two nets and define which places / transitions should be merged.
    Places and Transitions must be key-value pairs."
   [net1 net2 equal-places equal-trans]
-  (let [name            (str net1 "#" net2)
+  (let [name            (read-string (str net1 "#" net2))
         places-net1     ((@nets net1) :places)
         places-net2     ((@nets net2) :places)
         edges-to-net1   ((@nets net1) :edges-to-trans)
@@ -149,8 +150,9 @@
     (new-net name)
     (doall (map (fn [trans] (add-transition name trans)) merged-transitions))
     (doall (map (fn [[k v]] (add-place name k v)) merged-places))
-    (doall (map (fn [[k v]] (add-edge-to-transition name k v)) merged-edges-to-trans))
-    (doall (map (fn [[k v]] (add-edge-from-transition name k v)) merged-edges-from-trans))))
+    (swap! nets assoc-in [name :edges-to-trans] merged-edges-to-trans)
+    (swap! nets assoc-in [name :edges-from-trans] merged-edges-from-trans)))
+
 
 ;;;; Testing area
 (def init-two-nets (do (new-net :first)
@@ -159,17 +161,20 @@
                        (add-place :first :p 44)
                        (add-place :first :a 100)
                        (add-place :first :z 42)
-                       (add-edge-to-transition :first :p {:bombe 41})
-                       (add-edge-to-transition :first :p {:bombi 43})
-                       (add-edge-to-transition :first :z {:bombe 4})
-                       (add-edge-from-transition :first :bombi {:a 22})
+                       (add-place :first :b 21)
+                       (add-edge-to-transition :first :p :bombe 41)
+                       (add-edge-to-transition :first :p :bombi 43)
+                       (add-edge-to-transition :first :z :bombe 4)
+                       (add-edge-from-transition :first :bombi :a 22)
+                       (add-edge-from-transition :first :bombe :a 20)
+                       (add-edge-from-transition :first :bombi :b 10)
 
                        (new-net :second)
                        (add-transition :second :foo)
                        (add-place :second :q 22)
                        (add-place :second :a 55)
-                       (add-edge-to-transition :second :q {:foo 1})
-                       (add-edge-from-transition :second :foo {:a 3})))
+                       (add-edge-to-transition :second :q :foo 1)
+                       (add-edge-from-transition :second :foo :a 3)))
 init-two-nets
 
 ;; Merge two nets, get a new merged one added to 'nets'

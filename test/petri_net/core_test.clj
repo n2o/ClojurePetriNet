@@ -2,18 +2,6 @@
   (:require [petri-net.core :as controller])
   (:use [midje.sweet])) 
 
-(def nets
-  {:second
-   {:edges-from-trans {:foo {:a 3}},
-    :edges-to-trans {:q {:foo 1}},
-    :places {:a 55, :q 22},
-    :transitions #{:foo}},
-   :first
-   {:edges-from-trans {:bombi {:a 22}},
-    :edges-to-trans {:z {:bombe 4}, :p {:bombi 43}},
-    :places {:z 42, :a 100, :p 44},
-    :transitions #{:bombe :bombi}}})
-
 ;;;; Auxiliary functions
 
 (facts "Transforming a vector of vectors to a map."
@@ -64,9 +52,3 @@
     (controller/merge-transitions :first #{:bombe :bombi} #{:foo} {:bombe :foo}) => #{:foo ":first#:bombi"}))
 
 ;; add facts about merge-net
-
-;;;; Getting to the attributes
-
-(facts "Check if transition is alive"
-  (fact "Working"
-    (controller/transition-alive :foo) => nil))
