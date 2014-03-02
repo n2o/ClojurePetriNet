@@ -27,11 +27,11 @@
                                            (when (= t foo)
                                              [k tokens]))))))]
        (when-not (empty? place-token)
-         (every? identity (for [check place-token] (fireable? net check))))))
+         (every? identity (map #(fireable? net %) place-token)))))
   ([net t & ts]
      (if (transition-alive net t)
        true
-       (some true? (for [this ts] (transition-alive net this))))))
+       (some true? (map #(transition-alive net %) ts)))))
 
 (defn non-empty
   "There exists at least one token in the specified places."
@@ -40,7 +40,7 @@
   ([net p & ps]
      (if (fireable? net [p 0])
        true
-       (some true? (for [this ps] (fireable net [this 0]))))))
+       (some true? (map #(fireable? net [% 0]) ps)))))
 
 (defn net-alive
   "Checks if there exists at least one fireable transition."
