@@ -5,6 +5,12 @@
 
 ;;;; Facts about the attributes
 
-(facts "Trying transition-alive"
+(facts "Fireable...?"
   (fact
-    (simulator/transition-alive :first :bombe) => true))
+    (simulator/fireable :first [:p 44]) => true
+    (simulator/fireable :first [:p 45]) => false))
+
+(facts "Trying transition-alive."
+  (fact
+    (simulator/transition-alive :first :bombe) => true
+    (simulator/transition-alive :first :bombe :bombi) => true))
