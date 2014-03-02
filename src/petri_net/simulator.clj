@@ -26,7 +26,8 @@
                                          (for [[foo tokens] v]
                                            (when (= t foo)
                                              [k tokens]))))))]
-       (every? identity (for [check place-token] (fireable? net check)))))
+       (when-not (empty? place-token)
+         (every? identity (for [check place-token] (fireable? net check))))))
   ([net t & ts]
      (if (transition-alive net t)
        true
@@ -44,8 +45,8 @@
 (defn net-alive
   "Checks if there exists at least one fireable transition."
   [net]
-  (let [ts (api/get-transitions net)]
-    (when-not (nil? ts)
-      (transition-alive net ts))))
+  (let [ts (apply list (api/get-transitions net))]
+    (when-not (empty? ts)
+      (some true? (map #(transition-alive net %) ts)))))
+@api/get-nets
 
-(net-alive :nil)
