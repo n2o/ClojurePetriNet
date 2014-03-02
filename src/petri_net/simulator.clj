@@ -11,9 +11,21 @@
   "Takes the current net and a variable number of transitions and checks if one of the transitions are alive."
   [net t & ts]
   (let [trans (api/get-edges-to-trans net)]
-    (vec-to-map trans)
-    (println (for [[k v] (vec-to-map trans)] [k v]))
+    (println trans)
+    (for [[k v] trans]
+      (for [[foo tokens] v]
+        (when (= t foo)
+          (println "Res:" [k foo]))
+        )
+      )
     ))
+
+(defn firable
+  "Checks if place has enough token to get fired"
+  [place]
+  
+  )
+
 
 (transition-alive :first :bombe)
 @api/get-nets
