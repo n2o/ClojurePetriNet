@@ -7,10 +7,15 @@
 
 (facts "Fireable...?"
   (fact
-    (simulator/fireable :first [:p 44]) => true
-    (simulator/fireable :first [:p 45]) => false))
+    (simulator/fireable? :first [:p 44]) => true
+    (simulator/fireable? :first [:p 45]) => false))
 
 (facts "Trying transition-alive."
   (fact
     (simulator/transition-alive :first :bombe) => true
     (simulator/transition-alive :first :bombe :bombi) => true))
+
+(facts "Check if there is at least one non-empty place"
+  (fact
+    (simulator/non-empty :first :p) => true
+    (simulator/non-empty :first :nil) => nil))

@@ -43,7 +43,8 @@ get-nets
 (defn get-tokens
   "Returns the tokens from a specific place."
   [net place]
-  (place (get-places net)))
+  (when (place (get-places net))
+    (place (get-places net))))
 (get-tokens :first :a)
 
 (defn get-transitions

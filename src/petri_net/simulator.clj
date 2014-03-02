@@ -7,11 +7,13 @@
   [input]
   (apply merge (map #(hash-map (first %) (second %)) input)))
 
-(defn fireable
+(defn fireable?
   "Checks if place has enough tokens to fire."
   [net [place tokens]]
   (let [available (api/get-tokens net place)]
-    (<= 0 (- available tokens))))
+    (when-not (nil? available)
+      (<= 0 (- available tokens)))))
+
 
 ;TODO Simplify!
 (defn transition-alive
@@ -25,13 +27,19 @@
                                          (for [[foo tokens] v]
                                            (when (= t foo)
                                              [k tokens]))))))]
-       (every? identity (for [check place-token] (fireable net check)))))
+       (every? identity (for [check place-token] (fireable? net check)))))
   ([net t & ts]
-     (some true?
-             (concat (list (transition-alive net t))
-                     (for [this ts] (transition-alive net this))))))
-(transition-alive :first :bombe :bombi)
- 
-@api/get-nets
+     (if (transition-alive net t)
+       true
+       (some true? (for [this ts] (transition-alive net this))))))
+
+(defn non-empty
+  "There exists at least one token in the specified places."
+  ([net p]
+     (fireable? net [p 0]))
+  ([net p & ps]
+     (if (fireable? net [p 0])
+       true
+       (some true? (for [this ps] (fireable net [this 0]))))))
 
 (def wowlist {:z {:bombe 4 :bombi 42}, :p {:bombi 43}})
