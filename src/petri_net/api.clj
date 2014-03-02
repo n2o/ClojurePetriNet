@@ -5,13 +5,15 @@
 ;;;; Retrieve information from controller
 
 (def get-nets controller/nets)
-get-nets
 
 (defn get-net
   "Returns the net and all his attributes."
   [net]
   (when (net @get-nets) (net @get-nets)))
-(get-net :first)
+
+; Returns all net-names in the database
+(def get-net-names
+  (keys @get-nets))
 
 (defn net?
   "Returns true if the net exists in the database and falsey if not."
@@ -24,35 +26,30 @@ get-nets
   [net]
   (when (net? net)
     ((get-net net) :edges-to-trans)))
-(get-edges-to-trans :first)
 
 (defn get-edges-from-trans
   "Returns edges from transitions to places for a specific net if possible, else nil."
   [net]
   (when (net? net)
     ((get-net net) :edges-from-trans)))
-(get-edges-from-trans :first)
 
 (defn get-places
   "Returns all places incl. costs for a specific net if possible, else nil."
   [net]
   (when (net? net)
     ((get-net net) :places)))
-(get-places :first)
 
 (defn get-tokens
   "Returns the tokens from a specific place."
   [net place]
   (when (place (get-places net))
     (place (get-places net))))
-(get-tokens :first :a)
 
 (defn get-transitions
   "Returns all transitions for a spec. net if possible, else nil."
   [net]
   (when (net? net)
     ((get-net net) :transitions)))
-(get-transitions :first)
 
 
 ;;;; Section to manipulate the nets
@@ -62,14 +59,12 @@ get-nets
   [net]
   (when-not (net? net)
     (controller/new-net net)))
-(new-net :second)
 
 (defn delete-net
   "Deletes a net if it exists."
   [net]
   (when (net? net)
     (controller/delete-net net)))
-(delete-net :second)
 
 (defn save-net
   "Saves the whole database to the specified file."
@@ -89,7 +84,6 @@ get-nets
   [net place tokens]
   (when (net? net)
     (controller/add-place net place tokens)))
-(add-place :first :z 50)
 
 (defn add-transition
   "Adds a new transition into an existing petri net."
@@ -97,7 +91,6 @@ get-nets
   (when (and (net? net)
              (not (contains? (get-transitions net) trans)))
     (controller/add-transition net trans)))
-(add-transition :first :42)
 
 (defn add-edge-to-transition
   "Add an edge from a place to a transition. If the edge exists, update the entry."

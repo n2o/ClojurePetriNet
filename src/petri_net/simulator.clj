@@ -48,5 +48,3 @@
   (let [ts (apply list (api/get-transitions net))]
     (when-not (empty? ts)
       (some true? (map #(transition-alive net %) ts)))))
-@api/get-nets
-

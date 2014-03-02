@@ -174,7 +174,9 @@
                        (add-place :second :q 22)
                        (add-place :second :a 55)
                        (add-edge-to-transition :second :q :foo 1)
-                       (add-edge-from-transition :second :foo :a 3)))
+                       (add-edge-from-transition :second :foo :a 3)
+
+                       (new-net :empty)))
 init-two-nets
 
 ;; Merge two nets, get a new merged one added to 'nets'
