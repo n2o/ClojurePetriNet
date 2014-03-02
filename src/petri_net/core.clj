@@ -48,7 +48,7 @@
 (defn prefix-string
   "Add the network as a prefix for the input variable."
   [net input]
-  (str net "#" input))
+  (read-string (str net "#" input)))
 
 (defn vec-to-map
   "Takes an vector of vectors and translates it into a hash-map.
