@@ -14,7 +14,6 @@
     (when-not (nil? available)
       (<= 0 (- available tokens)))))
 
-
 ;TODO Simplify!
 (defn transition-alive
   "Takes the current net and a variable number of transitions and checks if one of the transitions are alive."
@@ -42,4 +41,11 @@
        true
        (some true? (for [this ps] (fireable net [this 0]))))))
 
-(def wowlist {:z {:bombe 4 :bombi 42}, :p {:bombi 43}})
+(defn net-alive
+  "Checks if there exists at least one fireable transition."
+  [net]
+  (let [ts (api/get-transitions net)]
+    (when-not (nil? ts)
+      (transition-alive net ts))))
+
+(net-alive :nil)

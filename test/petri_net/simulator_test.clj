@@ -18,4 +18,12 @@
 (facts "Check if there is at least one non-empty place"
   (fact
     (simulator/non-empty :first :p) => true
+    (simulator/non-empty :first :p :a) => true
+    (simulator/non-empty :first :p :a :z :nil) => true
+    (simulator/non-empty :nilnet :nilplace) => nil
     (simulator/non-empty :first :nil) => nil))
+
+(facts "Check if the net is alive"
+  (fact
+    (simulator/net-alive :first) => true
+    (simulator/net-alive :nilnet) => nil))
