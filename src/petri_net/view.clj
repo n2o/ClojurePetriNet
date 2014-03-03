@@ -2,24 +2,38 @@
   (:gen-class)
   (:use [seesaw.core])
   (:use [seesaw.mig])
-  (:require [petri-net.api :as api]))
+  (:require [petri-net.api :as api] :reload))
 
 ;;;; Data from Database
 
-(def nets (listbox :model api/get-net-names))
+(def nets (listbox :model (api/get-net-names)))
 (def places (listbox))
 (def edges-to-trans (listbox))
 (def edges-from-trans (listbox))
 (def transitions (listbox))
 
-
 ;;;; Buttons
 
 (def b-add-place
-  (button :text "Add Place" :enabled? false))
+  (button :text "Add place" :enabled? false))
 
 (def b-add-transition
-  (button :text "Add Transition" :enabled? false))
+  (button :text "Add transition" :enabled? false))
+
+(def b-add-edge-to-transition
+  (button :text "Add edge from place to transition" :enabled? false))
+
+(def b-add-edge-from-transition
+  (button :text "Add edge from transition to place" :enabled? false))
+
+(def b-new-net
+  (button :text "New net"))
+
+(def b-delete-net
+  (button :text "Delete net" :enabled? false))
+
+(def b-merge-net
+  (button :text "Merge nets" :enabled? false))
 
 ;;;; Setting up the layout
 
@@ -27,8 +41,8 @@
                            :columns 1
                            :items [(scrollable nets :border "Nets")
                                    (scrollable places :border "Places")
-                                   (scrollable edges-to-trans :border "Edges from Places to Transitions")
-                                   (scrollable edges-from-trans :border "Edges from Transitions to Places")
+                                   (scrollable edges-to-trans :border "Edges from place to transition")
+                                   (scrollable edges-from-trans :border "Edges from transition to place")
                                    (scrollable transitions :border "Transitions")]
                            :vgap 5 :hgap 5))
 
@@ -37,11 +51,24 @@
                           :items []
                           :vgap 5 :hgap 5))
 
-(def right-grid (grid-panel :border "Right-Grid"
-                            :columns 1
-                            :items [b-add-place
-                                    b-add-transition]
-                            :vgap 5 :hgap 5))
+(def group-net-extend
+  (vertical-panel
+   :border "Extend existing net"
+   :items [(flow-panel :align :left :items [b-add-place b-add-transition])
+           (flow-panel :align :left :items [b-add-edge-to-transition b-add-edge-from-transition])]))
+
+(def group-net-actions
+  (flow-panel
+   :border "Net Actions"
+   :align :left
+   :items [(horizontal-panel :items [b-new-net b-delete-net b-merge-net])]))
+
+(def right-grid
+  (grid-panel
+   :columns 1
+   :items [group-net-extend
+           group-net-actions]
+   :vgap 5 :hgap 5))
 
 (def main-frame
   (frame
@@ -58,14 +85,23 @@
   (config! main-frame :content content)
   content)
 
-(defn update-boxes! []
+(defn update-boxes!
+  "Updates all textboxes when something has changed."
+  []
   (config! places :model (api/get-places (selection nets)))
   (config! edges-to-trans :model (api/get-edges-to-trans (selection nets)))
   (config! edges-from-trans :model (api/get-edges-from-trans (selection nets)))
   (config! transitions :model (api/get-transitions (selection nets))))
 
-(defn activate-buttons! []
-  (let [buttons [b-add-place b-add-transition]]
+(defn update-nets!
+  []
+  (config! nets :model (api/get-net-names)))
+
+(defn toggle-buttons!
+  "Disables buttons if no net is selected. Otherwise activate them."
+  []
+  (let [buttons [b-add-place b-add-transition b-add-edge-to-transition b-add-edge-from-transition
+                 b-delete-net b-merge-net]]
     (if (nil? (selection nets))
       (config! buttons :enabled? false)
       (config! buttons :enabled? true))))
@@ -74,16 +110,55 @@
 
 (defn l-boxes [e]
   (update-boxes!)
-  (activate-buttons!))
+  (toggle-buttons!))
 
 (defn l-add-place [e]
-  (let [name (read-string (input "Name of place:"))
-        tokens (read-string (input "Number of tokens for initialization:"))]
-    (api/add-place (selection nets) name tokens)
+  (when-let [name (input "Name of place:")]
+    (when-let [tokens (input "Number of tokens for initialization:")]
+      (api/add-place (selection nets) (read-string name) (read-string tokens))
+      (update-boxes!))))
+
+(defn l-add-transition [e]
+  (when-let [name (input "Name of transition:")]
+    (api/add-transition (selection nets) (read-string name))
     (update-boxes!)))
 
+(defn l-add-edge-to-transition [e]
+  (when-let     [from   (input "[From?]  Name of place:")]
+    (when-let   [to     (input "[To?]    Name of transition:")]
+      (when-let [tokens (input "[Costs?] Weight of edge:")]
+        (api/add-edge-to-transition (selection nets) (read-string from) (read-string to) (read-string tokens))
+        (update-boxes!)))))
 
-;;;; Designing the UI
+(defn l-add-edge-from-transition [e]
+  (when-let     [from   (input "[From?]  Name of transition:")]
+    (when-let   [to     (input "[To?]    Name of place:")]
+      (when-let [tokens (input "[Costs?] Weight of edge:")]
+        (api/add-edge-from-transition (selection nets) (read-string from) (read-string to) (read-string tokens))
+        (update-boxes!)))))
+
+(defn l-new-net [e]
+  (when-let [name (input "Name of new net:")]
+    (api/new-net (read-string name))
+    (update-nets!)
+    (selection! nets (read-string name))))
+
+(defn l-delete-net [e]
+  (api/delete-net (selection nets))
+  (update-nets!))
+
+(defn l-merge-net [e]
+  (when-let       [net1   (input "[net1] Type first net to be merged:")]
+    (when-let     [net2   (input "[net2] Type second net to be merged:")]
+      (when-let   [equal-places (input "[equal-places] Which places should be merged?\nType a map like: {:a :b} to merge :a and :b"
+                                       :value {})]
+        (when-let [equal-trans  (input "[equal-trans] Which transitions should be merged?\nType a map like: {:a :b} to merge :a and :b"
+                                       :value {})]
+          (api/merge-net (read-string net1) (read-string net2) (read-string equal-places) (read-string equal-trans))
+          (update-nets!))))))
+
+
+;;;; Mainfunction to initialize the frame and call all needed listeners
 
 (defn -main [& args]
   (native!)
@@ -91,4 +166,10 @@
       pack!
       show!)
   (listen nets :selection l-boxes)
-  (listen b-add-place :action l-add-place))
+  (listen b-add-place :action l-add-place)
+  (listen b-add-transition :action l-add-transition)
+  (listen b-add-edge-to-transition :action l-add-edge-to-transition)
+  (listen b-add-edge-from-transition :action l-add-edge-from-transition)
+  (listen b-new-net :action l-new-net)
+  (listen b-delete-net :action l-delete-net)
+  (listen b-merge-net :action l-merge-net))

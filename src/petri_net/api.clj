@@ -12,8 +12,9 @@
   (when (and (not (nil? net)) (net @get-nets))
     (net @get-nets)))
 
-; Returns all net-names in the database
-(def get-net-names
+(defn get-net-names
+  "Returns all net-names in the database"
+  []
   (keys @get-nets))
 
 (defn net?
@@ -66,6 +67,13 @@
   (when (net? net)
     (controller/delete-net net)))
 
+(defn merge-net
+  "Merging two nets and define which places / transitions should be merged.
+   Places and Transitions must be key-value pairs."
+  [net1 net2 equal-places equal-transitions]
+  (when (and (net? net1) (net? net2))
+    (controller/merge-net net1 net2 equal-places equal-transitions)))
+
 (defn save-net
   "Saves the whole database to the specified file."
   [file]
@@ -82,7 +90,7 @@
 (defn add-place
   "Add a place to a net. Checks if the name placename is already taken. If yes, update entry in database."
   [net place tokens]
-  (when (net? net)
+  (when (and (net? net) (number? tokens))
     (controller/add-place net place tokens)))
 
 (defn add-transition
@@ -94,15 +102,19 @@
 
 (defn add-edge-to-transition
   "Add an edge from a place to a transition. If the edge exists, update the entry."
-  [net from to]
+  [net from to tokens]
   (when (net? net)
-    (controller/add-edge-to-transition net from to)))
+    (when-not (or (nil? ((get-places net) from))
+                  (nil? ((get-transitions net) to)))
+      (controller/add-edge-to-transition net from to tokens))))
 
 (defn add-edge-from-transition
   "Add an edge from a transition to a place. Update entry if exists."
-  [net from to]
+  [net from to tokens]
   (when (net? net)
-    (controller/add-edge-from-transition net from to)))
+    (when-not (or (nil? ((get-transitions net) from))
+                  (nil? ((get-places net) to)))
+      (controller/add-edge-from-transition net from to tokens))))
 
 (defn merge-net
   "Merging two nets and define which places / transitions should be merged.
