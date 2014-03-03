@@ -9,7 +9,8 @@
 (defn get-net
   "Returns the net and all his attributes."
   [net]
-  (when (net @get-nets) (net @get-nets)))
+  (when (and (not (nil? net)) (net @get-nets))
+    (net @get-nets)))
 
 ; Returns all net-names in the database
 (def get-net-names
@@ -50,7 +51,6 @@
   [net]
   (when (net? net)
     ((get-net net) :transitions)))
-
 
 ;;;; Section to manipulate the nets
 

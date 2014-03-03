@@ -2,29 +2,34 @@
   (:gen-class)
   (:use [seesaw.core])
   (:use [seesaw.mig])
-  (:require [petri-net.api :as api])
-  (:require clojure.pprint))
+  (:require [petri-net.api :as api]))
 
-;;;; Model
+;;;; Data from Database
 
-(def nets
-  (scrollable (listbox :model api/get-net-names)
-              :border "Nets"))
+(def nets (listbox :model api/get-net-names))
+(def places (listbox))
+(def edges-to-trans (listbox))
+(def edges-from-trans (listbox))
+(def transitions (listbox))
 
-(def places
-  (scrollable (listbox :model (for [net api/get-net-names] (api/get-places net)))
-              :border "Places"))
 
-(def database
-  (scrollable (listbox :model @api/get-nets)))
+;;;; Buttons
 
+(def b-add-place
+  (button :text "Add Place" :enabled? false))
+
+(def b-add-transition
+  (button :text "Add Transition" :enabled? false))
 
 ;;;; Setting up the layout
 
 (def left-grid (grid-panel :border "Database"
                            :columns 1
-                           :items [nets
-                                   places]
+                           :items [(scrollable nets :border "Nets")
+                                   (scrollable places :border "Places")
+                                   (scrollable edges-to-trans :border "Edges from Places to Transitions")
+                                   (scrollable edges-from-trans :border "Edges from Transitions to Places")
+                                   (scrollable transitions :border "Transitions")]
                            :vgap 5 :hgap 5))
 
 (def mid-grid (grid-panel :border "Mid-Grid"
@@ -34,7 +39,8 @@
 
 (def right-grid (grid-panel :border "Right-Grid"
                             :columns 1
-                            :items []
+                            :items [b-add-place
+                                    b-add-transition]
                             :vgap 5 :hgap 5))
 
 (def main-frame
@@ -52,16 +58,37 @@
   (config! main-frame :content content)
   content)
 
+(defn update-boxes! []
+  (config! places :model (api/get-places (selection nets)))
+  (config! edges-to-trans :model (api/get-edges-to-trans (selection nets)))
+  (config! edges-from-trans :model (api/get-edges-from-trans (selection nets)))
+  (config! transitions :model (api/get-transitions (selection nets))))
+
+(defn activate-buttons! []
+  (let [buttons [b-add-place b-add-transition]]
+    (if (nil? (selection nets))
+      (config! buttons :enabled? false)
+      (config! buttons :enabled? true))))
+
+;;;; Defining listener
+
+(defn l-boxes [e]
+  (update-boxes!)
+  (activate-buttons!))
+
+(defn l-add-place [e]
+  (let [name (read-string (input "Name of place:"))
+        tokens (read-string (input "Number of tokens for initialization:"))]
+    (api/add-place (selection nets) name tokens)
+    (update-boxes!)))
+
+
 ;;;; Designing the UI
 
 (defn -main [& args]
   (native!)
   (-> main-frame
       pack!
-      show!))
-  
-  ;;(display nets)
-  ;;(display (left-right-split (scrollable nets) (scrollable places) :divider-location 1/2))
-  ;;(display (left-right-split (scrollable nets) (scrollable places) :divider-location 1/2))
-
-
+      show!)
+  (listen nets :selection l-boxes)
+  (listen b-add-place :action l-add-place))
