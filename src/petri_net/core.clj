@@ -155,29 +155,30 @@
 
 
 ;;;; Testing area
-(def init-two-nets (do (new-net :first)
-                       (add-transition :first :bombe)
-                       (add-transition :first :bombi)
-                       (add-place :first :p 44)
-                       (add-place :first :a 100)
-                       (add-place :first :z 42)
-                       (add-place :first :b 21)
-                       (add-edge-to-transition :first :p :bombe 41)
-                       (add-edge-to-transition :first :p :bombi 43)
-                       (add-edge-to-transition :first :z :bombe 4)
-                       (add-edge-from-transition :first :bombi :a 22)
-                       (add-edge-from-transition :first :bombe :a 20)
-                       (add-edge-from-transition :first :bombi :b 10)
-
-                       (new-net :second)
-                       (add-transition :second :foo)
-                       (add-place :second :q 22)
-                       (add-place :second :a 55)
-                       (add-edge-to-transition :second :q :foo 1)
-                       (add-edge-from-transition :second :foo :a 3)
-
-                       (new-net :empty)))
-init-two-nets
+(defn init-two-nets []
+  (do (new-net :first)
+      (add-transition :first :bombe)
+      (add-transition :first :bombi)
+      (add-place :first :p 44)
+      (add-place :first :a 100)
+      (add-place :first :z 42)
+      (add-place :first :b 21)
+      (add-edge-to-transition :first :p :bombe 41)
+      (add-edge-to-transition :first :p :bombi 43)
+      (add-edge-to-transition :first :z :bombe 4)
+      (add-edge-from-transition :first :bombi :a 22)
+      (add-edge-from-transition :first :bombe :a 20)
+      (add-edge-from-transition :first :bombi :b 10)
+      
+      (new-net :second)
+      (add-transition :second :foo)
+      (add-place :second :q 22)
+      (add-place :second :a 55)
+      (add-edge-to-transition :second :q :foo 1)
+      (add-edge-from-transition :second :foo :a 3)
+      
+      (new-net :empty)))
+(init-two-nets)
 
 ;; Merge two nets, get a new merged one added to 'nets'
 ;(do

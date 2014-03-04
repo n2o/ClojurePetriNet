@@ -14,18 +14,10 @@
     (when-not (nil? available)
       (<= 0 (- available tokens)))))
 
-(defn get-places-to-transition
-  "Returns the places which have an edge to a transition. Represented in a hashmap concluding {place cost-of-edge, ...}."
-  [net t]
-  (let [trans (api/get-edges-to-trans net)]
-    (apply hash-map (remove nil? (flatten
-                                  (for [[k v] trans] (for [[foo tokens] v]
-                                                       (when (= t foo) [k tokens]))))))))
-
 (defn transition-alive?
   "Takes the current net and a variable number of transitions and checks if one of the transitions are alive."
   ([net t]
-     (let [place-token (get-places-to-transition net t)]
+     (let [place-token (api/get-places-to-transition net t)]
        (when-not (empty? place-token)
          (every? identity (map #(fireable? net %) place-token)))))
   ([net t & ts]
@@ -52,6 +44,20 @@
 (defn fire
   "Fires a specified transition."
   [net t]
+  (println "FIIIIIIREEE in the hole!")
   (when (transition-alive? net t)
-    ))
-(fire :first :bombe)
+    (let [from-places (api/get-places-to-transition net t)
+          to-places   (api/get-places-from-transition net t)]
+      (doall (for [[place token] from-places] (api/update-place net place token)))
+      (doall (for [[place token] to-places] (api/update-place net place (- token)))))))
+
+(defn get-random-live-transition
+  [net]
+  (let [ts        (vec (api/get-transitions net))
+        num-trans (count ts)]
+    (loop [n 0
+           t (ts (rand-int num-trans))]
+      (when (< n 100)
+        (if (transition-alive? net t)
+          t
+          (recur (inc n) (ts (rand-int num-trans))))))))

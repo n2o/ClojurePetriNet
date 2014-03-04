@@ -2,7 +2,8 @@
   (:gen-class)
   (:use [seesaw.core])
   (:use [seesaw.mig])
-  (:require [petri-net.api :as api] :reload))
+  (:require [petri-net.api :as api] :reload)
+  (:require [petri-net.simulator :as simulator] :reload))
 
 ;;;; Data from Database
 
@@ -35,6 +36,17 @@
 (def b-merge-net
   (button :text "Merge nets" :enabled? false))
 
+(def b-sim-fire
+  (button :text "Fire marked transition" :enabled? false))
+
+(def b-sim-fire-random
+  (button :text "Fire random transition" :enabled? false))
+
+;;;; Textfields
+
+(def t-sim-fire-n-times
+  (text :text 1 :columns 5))
+
 ;;;; Setting up the layout
 
 (def left-grid (grid-panel :border "Database"
@@ -46,28 +58,43 @@
                                    (scrollable transitions :border "Transitions")]
                            :vgap 5 :hgap 5))
 
-(def mid-grid (grid-panel :border "Mid-Grid"
-                          :columns 1
+(def mid-grid (grid-panel :columns 3
                           :items []
                           :vgap 5 :hgap 5))
+
+(def group-sim-automatic
+  (grid-panel
+   :border "Automatic Execution"
+   :columns 2
+   :items ["Do times:" t-sim-fire-n-times
+           "(selects only live transitions)" b-sim-fire-random]))
 
 (def group-net-extend
   (vertical-panel
    :border "Extend existing net"
    :items [(flow-panel :align :left :items [b-add-place b-add-transition])
-           (flow-panel :align :left :items [b-add-edge-to-transition b-add-edge-from-transition])]))
+           (flow-panel :align :left :items [b-add-edge-to-transition])
+           (flow-panel :align :left :items [b-add-edge-from-transition])]))
 
 (def group-net-actions
   (flow-panel
    :border "Net Actions"
    :align :left
-   :items [(horizontal-panel :items [b-new-net b-delete-net b-merge-net])]))
+   :items [(flow-panel :align :left :items [b-new-net b-delete-net b-merge-net])]))
+
+(def group-sim
+  (vertical-panel
+   :border "Simulator"
+   
+   :items [(flow-panel :align :left :items [b-sim-fire])
+           group-sim-automatic]))
 
 (def right-grid
   (grid-panel
    :columns 1
    :items [group-net-extend
-           group-net-actions]
+           group-net-actions
+           group-sim]
    :vgap 5 :hgap 5))
 
 (def main-frame
@@ -78,12 +105,7 @@
    :content (horizontal-panel
              :items [left-grid mid-grid right-grid])))
 
-
 ;;;; Auxiliary functions
-
-(defn display [content]
-  (config! main-frame :content content)
-  content)
 
 (defn update-boxes!
   "Updates all textboxes when something has changed."
@@ -94,22 +116,31 @@
   (config! transitions :model (api/get-transitions (selection nets))))
 
 (defn update-nets!
+  "Update listbox showing the nets."
   []
   (config! nets :model (api/get-net-names)))
 
 (defn toggle-buttons!
-  "Disables buttons if no net is selected. Otherwise activate them."
+  "Disables buttons if no net or transition is selected. Otherwise activate them."
   []
   (let [buttons [b-add-place b-add-transition b-add-edge-to-transition b-add-edge-from-transition
-                 b-delete-net b-merge-net]]
+                 b-delete-net b-merge-net
+                 b-sim-fire-random]
+        sim     [b-sim-fire]]
     (if (nil? (selection nets))
       (config! buttons :enabled? false)
-      (config! buttons :enabled? true))))
+      (config! buttons :enabled? true))
+    (if (nil? (selection transitions))
+      (config! sim :enabled? false)
+      (config! sim :enabled? true))))
 
 ;;;; Defining listener
 
 (defn l-boxes [e]
   (update-boxes!)
+  (toggle-buttons!))
+
+(defn l-trans-box [e]
   (toggle-buttons!))
 
 (defn l-add-place [e]
@@ -157,6 +188,20 @@
           (api/merge-net (read-string net1) (read-string net2) (read-string equal-places) (read-string equal-trans))
           (update-nets!))))))
 
+(defn l-sim-fire [e]
+  (when-let [select (selection transitions)]
+    (simulator/fire (selection nets) select)
+    (update-boxes!)
+    (selection! transitions select)))
+
+(defn l-sim-fire-random [e]
+  (dotimes [n (read-string (value t-sim-fire-n-times))]
+    (when-let [net (selection nets)]
+      (Thread/sleep 200)
+      (simulator/fire net (simulator/get-random-live-transition net))
+      (update-boxes!)
+      (selection! nets net))))
+
 
 ;;;; Mainfunction to initialize the frame and call all needed listeners
 
@@ -166,10 +211,13 @@
       pack!
       show!)
   (listen nets :selection l-boxes)
+  (listen transitions :selection l-trans-box)
   (listen b-add-place :action l-add-place)
   (listen b-add-transition :action l-add-transition)
   (listen b-add-edge-to-transition :action l-add-edge-to-transition)
   (listen b-add-edge-from-transition :action l-add-edge-from-transition)
   (listen b-new-net :action l-new-net)
   (listen b-delete-net :action l-delete-net)
-  (listen b-merge-net :action l-merge-net))
+  (listen b-merge-net :action l-merge-net)
+  (listen b-sim-fire :action l-sim-fire)
+  (listen b-sim-fire-random :action l-sim-fire-random))

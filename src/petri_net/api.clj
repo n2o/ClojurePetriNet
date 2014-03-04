@@ -45,13 +45,31 @@
   "Returns the tokens from a specific place."
   [net place]
   (when (place (get-places net))
-    (place (get-places net))))
+    ((get-places net) place)))
 
 (defn get-transitions
   "Returns all transitions for a spec. net if possible, else nil."
   [net]
   (when (net? net)
     ((get-net net) :transitions)))
+
+(defn get-places-to-transition
+  "Returns the places which have an edge to a transition.
+   Represented in a hashmap concluding {place cost-of-edge, ...}."
+  [net t]
+  (let [trans (get-edges-to-trans net)]
+    (apply hash-map (remove nil? (flatten
+                                  (for [[k v] trans] (for [[foo tokens] v]
+                                                       (when (= t foo) [k tokens]))))))))
+
+(defn get-places-from-transition
+  "Returns the places which have an edge from a transition.
+   Represented in a hashmap concluding {place cost-of-edge, ...}."
+  [net t]
+  (let [edges-from-trans (get-edges-from-trans net)]
+    (when-not (nil? (edges-from-trans t))
+      (apply identity (vals (filter #(= (first %) t) edges-from-trans))))))
+
 
 ;;;; Section to manipulate the nets
 
@@ -92,6 +110,14 @@
   [net place tokens]
   (when (and (net? net) (number? tokens))
     (controller/add-place net place tokens)))
+
+(defn update-place
+  "Calculates the difference of provided tokens and currently available tokens. Then sets new value to place."
+  [net place tokens]
+  (let [current (get-tokens net place)
+        diff (- current tokens)]
+    (when (<= 0 diff)
+      (add-place net place diff))))
 
 (defn add-transition
   "Adds a new transition into an existing petri net."
