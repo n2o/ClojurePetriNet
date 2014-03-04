@@ -93,14 +93,24 @@
     (controller/merge-net net1 net2 equal-places equal-transitions)))
 
 (defn save-net
-  "Saves the whole database to the specified file."
-  [file]
-  (controller/save-net file))
+  "Saves one net to the specified file."
+  [net]
+  (controller/save-net net))
 
 (defn load-net
-  "Loads a DSL from file into the database. Overwrites the old one."
+  "Loads a net from file into the database."
   [file]
   (controller/load-net file))
+
+(defn save-db
+  "Saves the whole database into the file."
+  []
+  (controller/save-db))
+
+(defn load-db
+  "Loads a database. Replaces the old one."
+  [file]
+  (controller/load-db))
 
 
 ;;;; Manipulate one net, for example add a place, transition, ...
@@ -108,7 +118,7 @@
 (defn add-place
   "Add a place to a net. Checks if the name placename is already taken. If yes, update entry in database."
   [net place tokens]
-  (when (and (net? net) (number? tokens))
+  (when (and (net? net) (number? tokens) (< 0 tokens))
     (controller/add-place net place tokens)))
 
 (defn update-place
@@ -129,7 +139,7 @@
 (defn add-edge-to-transition
   "Add an edge from a place to a transition. If the edge exists, update the entry."
   [net from to tokens]
-  (when (net? net)
+  (when (and (net? net) (number? tokens) (< 0 tokens))
     (when-not (or (nil? ((get-places net) from))
                   (nil? ((get-transitions net) to)))
       (controller/add-edge-to-transition net from to tokens))))
@@ -137,7 +147,7 @@
 (defn add-edge-from-transition
   "Add an edge from a transition to a place. Update entry if exists."
   [net from to tokens]
-  (when (net? net)
+  (when (and (net? net) (number? tokens) (< 0 tokens))
     (when-not (or (nil? ((get-transitions net) from))
                   (nil? ((get-places net) to)))
       (controller/add-edge-from-transition net from to tokens))))

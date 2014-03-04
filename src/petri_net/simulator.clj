@@ -44,7 +44,6 @@
 (defn fire
   "Fires a specified transition."
   [net t]
-  (println "FIIIIIIREEE in the hole!")
   (when (transition-alive? net t)
     (let [from-places (api/get-places-to-transition net t)
           to-places   (api/get-places-from-transition net t)]

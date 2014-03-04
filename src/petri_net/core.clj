@@ -34,14 +34,26 @@
   (swap! nets dissoc net))
 
 (defn save-net
-  "Saves the database 'nets' into the file."
-  [file]
-  (spit file @nets))
+  "Saves one net into the file."
+  [net]
+  (spit (str (name net) ".dsl") (hash-map net (@nets net))))
 
 (defn load-net
-  ""
+  "Loads a net into the database."
   [file]
   (swap! nets conj (read-string (slurp file))))
+
+(defn save-db
+  "Saves the whole database into the file."
+  []
+  (spit (str "database.dsl") @nets))
+(save-db)
+
+(defn load-db
+  "Loads a database. Replaces the old one."
+  [file]
+  (reset! nets (read-string (slurp file))))
+(load-db "database.dsl")
 
 
 ;;;; Auxiliary functions

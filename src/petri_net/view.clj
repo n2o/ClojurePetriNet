@@ -3,7 +3,8 @@
   (:use [seesaw.core])
   (:use [seesaw.mig])
   (:require [petri-net.api :as api] :reload)
-  (:require [petri-net.simulator :as simulator] :reload))
+  (:require [petri-net.simulator :as simulator] :reload)
+  (:require [seesaw.chooser :as chooser]))
 
 ;;;; Data from Database
 
@@ -26,6 +27,18 @@
 
 (def b-add-edge-from-transition
   (button :text "Add edge from transition to place" :enabled? false))
+
+(def b-load-db
+  (button :text "Load database"))
+
+(def b-save-db
+  (button :text "Save database" :enabled? false))
+
+(def b-load-net
+  (button :text "Load net"))
+
+(def b-save-net
+  (button :text "Save net" :enabled? false))
 
 (def b-new-net
   (button :text "New net"))
@@ -64,10 +77,17 @@
 
 (def group-sim-automatic
   (grid-panel
-   :border "Automatic Execution"
+   :border "Automatic fire alive transition"
    :columns 2
    :items ["Do times:" t-sim-fire-n-times
-           "(selects only live transitions)" b-sim-fire-random]))
+           " " b-sim-fire-random]))
+
+(def group-net-actions
+  (vertical-panel
+   :border "Net Actions"
+   :items [(flow-panel :align :left :items [b-load-db b-save-db])
+           (flow-panel :align :left :items [b-load-net b-save-net])
+           (flow-panel :align :left :items [b-new-net b-delete-net b-merge-net])]))
 
 (def group-net-extend
   (vertical-panel
@@ -75,12 +95,6 @@
    :items [(flow-panel :align :left :items [b-add-place b-add-transition])
            (flow-panel :align :left :items [b-add-edge-to-transition])
            (flow-panel :align :left :items [b-add-edge-from-transition])]))
-
-(def group-net-actions
-  (flow-panel
-   :border "Net Actions"
-   :align :left
-   :items [(flow-panel :align :left :items [b-new-net b-delete-net b-merge-net])]))
 
 (def group-sim
   (vertical-panel
@@ -92,8 +106,8 @@
 (def right-grid
   (grid-panel
    :columns 1
-   :items [group-net-extend
-           group-net-actions
+   :items [group-net-actions
+           group-net-extend
            group-sim]
    :vgap 5 :hgap 5))
 
@@ -124,7 +138,7 @@
   "Disables buttons if no net or transition is selected. Otherwise activate them."
   []
   (let [buttons [b-add-place b-add-transition b-add-edge-to-transition b-add-edge-from-transition
-                 b-delete-net b-merge-net
+                 b-save-db b-save-net b-delete-net b-merge-net
                  b-sim-fire-random]
         sim     [b-sim-fire]]
     (if (nil? (selection nets))
@@ -197,11 +211,19 @@
 (defn l-sim-fire-random [e]
   (dotimes [n (read-string (value t-sim-fire-n-times))]
     (when-let [net (selection nets)]
-      (Thread/sleep 200)
       (simulator/fire net (simulator/get-random-live-transition net))
       (update-boxes!)
       (selection! nets net))))
 
+(defn l-save-net [e]
+  (when-let [net (selection nets)]
+    (api/save-net net)
+    (alert (str "Net saved as: " (name net) ".dsl"))))
+
+(defn l-load-net [e]
+  (when-let [file (chooser/choose-file)]
+    (api/load-net (.getPath file))
+    (update-nets!)))
 
 ;;;; Mainfunction to initialize the frame and call all needed listeners
 
@@ -212,6 +234,8 @@
       show!)
   (listen nets :selection l-boxes)
   (listen transitions :selection l-trans-box)
+  (listen b-save-net :action l-save-net)
+  (listen b-load-net :action l-load-net)
   (listen b-add-place :action l-add-place)
   (listen b-add-transition :action l-add-transition)
   (listen b-add-edge-to-transition :action l-add-edge-to-transition)
