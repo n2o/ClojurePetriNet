@@ -14,26 +14,26 @@
     (when-not (nil? available)
       (<= 0 (- available tokens)))))
 
-;TODO Simplify!
-(defn transition-alive
+(defn get-places-to-transition
+  "Returns the places which have an edge to a transition. Represented in a hashmap concluding {place cost-of-edge, ...}."
+  [net t]
+  (let [trans (api/get-edges-to-trans net)]
+    (apply hash-map (remove nil? (flatten
+                                  (for [[k v] trans] (for [[foo tokens] v]
+                                                       (when (= t foo) [k tokens]))))))))
+
+(defn transition-alive?
   "Takes the current net and a variable number of transitions and checks if one of the transitions are alive."
   ([net t]
-     (let [trans (api/get-edges-to-trans net)
-           place-token (apply hash-map
-                              (remove nil?
-                                      (flatten
-                                       (for [[k v] trans]
-                                         (for [[foo tokens] v]
-                                           (when (= t foo)
-                                             [k tokens]))))))]
+     (let [place-token (get-places-to-transition net t)]
        (when-not (empty? place-token)
          (every? identity (map #(fireable? net %) place-token)))))
   ([net t & ts]
-     (if (transition-alive net t)
+     (if (transition-alive? net t)
        true
-       (some true? (map #(transition-alive net %) ts)))))
+       (some true? (map #(transition-alive? net %) ts)))))
 
-(defn non-empty
+(defn non-empty?
   "There exists at least one token in the specified places."
   ([net p]
      (fireable? net [p 0]))
@@ -42,9 +42,16 @@
        true
        (some true? (map #(fireable? net [% 0]) ps)))))
 
-(defn net-alive
+(defn net-alive?
   "Checks if there exists at least one fireable transition."
   [net]
   (let [ts (apply list (api/get-transitions net))]
     (when-not (empty? ts)
-      (some true? (map #(transition-alive net %) ts)))))
+      (some true? (map #(transition-alive? net %) ts)))))
+
+(defn fire
+  "Fires a specified transition."
+  [net t]
+  (when (transition-alive? net t)
+    ))
+(fire :first :bombe)
