@@ -13,47 +13,42 @@
 (def edges-to-trans (listbox))
 (def edges-from-trans (listbox))
 (def transitions (listbox))
+(def properties (listbox))
 
 ;;;; Buttons
 
 (def b-add-place
   (button :text "Add place" :enabled? false))
-
 (def b-add-transition
   (button :text "Add transition" :enabled? false))
-
 (def b-add-edge-to-transition
   (button :text "Add edge from place to transition" :enabled? false))
-
 (def b-add-edge-from-transition
   (button :text "Add edge from transition to place" :enabled? false))
-
 (def b-load-db
   (button :text "Load database"))
-
 (def b-save-db
   (button :text "Save database"))
-
 (def b-load-net
   (button :text "Load net"))
-
 (def b-save-net
   (button :text "Save net" :enabled? false))
-
 (def b-new-net
   (button :text "New net"))
-
 (def b-delete-net
   (button :text "Delete net" :enabled? false))
-
 (def b-merge-net
   (button :text "Merge nets" :enabled? false))
-
 (def b-sim-fire
   (button :text "Fire marked transition" :enabled? false))
-
 (def b-sim-fire-random
   (button :text "Fire random transition" :enabled? false))
+(def b-net-alive
+  (button :text "Net alive?" :enabled? false))
+(def b-transition-alive
+  (button :text "Transition alive?" :enabled? false))
+(def b-non-empty
+  (button :text "Non empty?" :enabled? false))
 
 ;;;; Textfields
 
@@ -77,9 +72,9 @@
 
 (def group-sim-automatic
   (grid-panel
-   :border "Automatic fire alive transition"
+   :border "Fire alive transition"
    :columns 2
-   :items ["Do times:" t-sim-fire-n-times
+   :items ["Do times (greater zero):" t-sim-fire-n-times
            " " b-sim-fire-random]))
 
 (def group-net-actions
@@ -91,7 +86,7 @@
 
 (def group-net-extend
   (vertical-panel
-   :border "Extend existing net"
+   :border "Extend net"
    :items [(flow-panel :align :left :items [b-add-place b-add-transition])
            (flow-panel :align :left :items [b-add-edge-to-transition])
            (flow-panel :align :left :items [b-add-edge-from-transition])]))
@@ -103,12 +98,19 @@
    :items [(flow-panel :align :left :items [b-sim-fire])
            group-sim-automatic]))
 
+(def group-properties
+  (vertical-panel
+   :border "Set up some properties"
+   :items [(flow-panel :align :left :items [b-net-alive b-transition-alive b-non-empty])
+           (scrollable properties :border "Current")]))
+
 (def right-grid
   (grid-panel
    :columns 1
    :items [group-net-actions
            group-net-extend
-           group-sim]
+           group-sim
+           group-properties]
    :vgap 5 :hgap 5))
 
 (def main-frame
@@ -137,16 +139,22 @@
 (defn toggle-buttons!
   "Disables buttons if no net or transition is selected. Otherwise activate them."
   []
-  (let [buttons [b-add-place b-add-transition b-add-edge-to-transition b-add-edge-from-transition
-                 b-save-net b-delete-net b-merge-net
-                 b-sim-fire-random]
-        sim     [b-sim-fire]]
+  (let [net [b-add-place b-add-transition b-add-edge-to-transition b-add-edge-from-transition
+             b-save-net b-delete-net b-merge-net
+             b-sim-fire-random
+             b-net-alive]
+        trans [b-sim-fire
+               b-transition-alive]
+        place [b-non-empty]]
     (if (nil? (selection nets))
-      (config! buttons :enabled? false)
-      (config! buttons :enabled? true))
+      (config! net :enabled? false)
+      (config! net :enabled? true))
     (if (nil? (selection transitions))
-      (config! sim :enabled? false)
-      (config! sim :enabled? true))))
+      (config! trans :enabled? false)
+      (config! trans :enabled? true))
+    (if (nil? (selection places))
+      (config! place :enabled? false)
+      (config! place :enabled? true))))
 
 ;;;; Defining listener
 
@@ -154,7 +162,7 @@
   (update-boxes!)
   (toggle-buttons!))
 
-(defn l-trans-box [e]
+(defn l-buttons [e]
   (toggle-buttons!))
 
 (defn l-add-place [e]
@@ -242,7 +250,8 @@
       pack!
       show!)
   (listen nets :selection l-boxes)
-  (listen transitions :selection l-trans-box)
+  (listen transitions :selection l-buttons)
+  (listen places :selection l-buttons)
   (listen b-save-net :action l-save-net)
   (listen b-load-net :action l-load-net)
   (listen b-save-db :action l-save-db)

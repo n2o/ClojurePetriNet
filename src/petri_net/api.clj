@@ -158,3 +158,18 @@
   [net1 net2 equal-places equal-trans]
   (when (and (net? net1) (net? net2))
     (controller/merge-net net1 net2 equal-places equal-trans)))
+
+
+;;;; Edit properties
+
+(defn add-property
+  "Adds a new transition into a petri net."
+  [net name]
+  (when (net? net)
+    (controller/add-property net name)))
+
+(defn delete-property
+  "Adds a new transition into a petri net."
+  [net name]
+  (when (net? net)
+    (controller/delete-property net name)))

@@ -26,7 +26,7 @@
                          :edges-to-trans   {}
                          :places           {}
                          :transitions     #{}
-                         :props            {}}))
+                         :props           #{}}))
 
 (defn delete-net
   "Removes one net including all data from the database 'nets'."
@@ -103,6 +103,19 @@
   "Add an edge from a transition to a place."
   [net from to tokens]
   (swap! nets assoc-in [net :edges-from-trans from to] tokens))
+
+
+;;;; Edit properties
+
+(defn add-property
+  "Adds a new transition into a petri net."
+  [net name]
+  (swap! nets update-in [net :properties] #(clojure.set/union % #{name})))
+
+(defn delete-property
+  "Adds a new transition into a petri net."
+  [net name]
+  (swap! nets update-in [net :properties] #(remove #{name} %)))
 
 
 ;;;; Merging two nets
