@@ -61,3 +61,4 @@
           (if (transition-alive? net t)
             t
             (recur (inc n) (ts (rand-int num-trans)))))))))
+

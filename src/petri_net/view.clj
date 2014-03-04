@@ -6,6 +6,8 @@
   (:require [petri-net.simulator :as simulator] :reload)
   (:require [seesaw.chooser :as chooser]))
 
+(native!)
+
 ;;;; Data from Database
 
 (def nets (listbox :model (api/get-net-names)))
@@ -55,6 +57,23 @@
 (def t-sim-fire-n-times
   (text :text 1 :columns 5))
 
+;;;; Menubar
+
+(defn a-exit  [e] (println "a-exit"))
+(defn a-copy  [e] (println "a-copy"))
+(defn a-cut   [e] (println "a-cut"))
+(defn a-paste [e] (println "a-paste"))
+
+
+(def menus
+     (let [a-exit (action :handler a-exit :name "Exit" :tip "Exit the editor.")
+           a-copy (action :handler a-copy :name "Copy" :tip "Copy selected text to the clipboard.")
+           a-paste (action :handler a-paste :name "Paste" :tip "Paste text from the clipboard.")
+           a-cut (action :handler a-cut :name "Cut" :tip "Cut text to the clipboard.")]
+       (menubar
+        :items [(menu :text "File" :items [a-exit])
+                (menu :text "Edit" :items [a-copy a-cut a-paste])])))
+
 ;;;; Setting up the layout
 
 (def left-grid (grid-panel :border "Database"
@@ -64,7 +83,7 @@
                                    (scrollable edges-to-trans :border "Edges from place to transition")
                                    (scrollable edges-from-trans :border "Edges from transition to place")
                                    (scrollable transitions :border "Transitions")]
-                           :vgap 5 :hgap 5))
+                           :vgap 0 :hgap 0))
 
 (def mid-grid (grid-panel :columns 3
                           :items []
@@ -94,7 +113,6 @@
 (def group-sim
   (vertical-panel
    :border "Simulator"
-   
    :items [(flow-panel :align :left :items [b-sim-fire])
            group-sim-automatic]))
 
@@ -118,6 +136,7 @@
    :title "Petri-Net Simulator"
    :minimum-size [640 :by 480]
    :on-close :exit
+   :menubar menus
    :content (horizontal-panel
              :items [left-grid mid-grid right-grid])))
 
@@ -245,7 +264,6 @@
 ;;;; Mainfunction to initialize the frame and call all needed listeners
 
 (defn -main [& args]
-  (native!)
   (-> main-frame
       pack!
       show!)
