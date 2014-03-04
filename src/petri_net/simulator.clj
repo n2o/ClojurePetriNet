@@ -54,9 +54,10 @@
   [net]
   (let [ts        (vec (api/get-transitions net))
         num-trans (count ts)]
-    (loop [n 0
-           t (ts (rand-int num-trans))]
-      (when (< n 100)
-        (if (transition-alive? net t)
-          t
-          (recur (inc n) (ts (rand-int num-trans))))))))
+    (when (< 0 num-trans)
+      (loop [n 0
+             t (ts (rand-int num-trans))]
+        (when (< n 100)
+          (if (transition-alive? net t)
+            t
+            (recur (inc n) (ts (rand-int num-trans)))))))))

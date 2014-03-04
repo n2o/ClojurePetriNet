@@ -32,7 +32,7 @@
   (button :text "Load database"))
 
 (def b-save-db
-  (button :text "Save database" :enabled? false))
+  (button :text "Save database"))
 
 (def b-load-net
   (button :text "Load net"))
@@ -138,7 +138,7 @@
   "Disables buttons if no net or transition is selected. Otherwise activate them."
   []
   (let [buttons [b-add-place b-add-transition b-add-edge-to-transition b-add-edge-from-transition
-                 b-save-db b-save-net b-delete-net b-merge-net
+                 b-save-net b-delete-net b-merge-net
                  b-sim-fire-random]
         sim     [b-sim-fire]]
     (if (nil? (selection nets))
@@ -225,6 +225,15 @@
     (api/load-net (.getPath file))
     (update-nets!)))
 
+(defn l-save-db [e]
+  (api/save-db)
+  (alert "Database saved as: database.dsl"))
+
+(defn l-load-db [e]
+  (when-let [file (chooser/choose-file)]
+    (api/load-db (.getPath file))
+    (update-nets!)))
+
 ;;;; Mainfunction to initialize the frame and call all needed listeners
 
 (defn -main [& args]
@@ -236,6 +245,8 @@
   (listen transitions :selection l-trans-box)
   (listen b-save-net :action l-save-net)
   (listen b-load-net :action l-load-net)
+  (listen b-save-db :action l-save-db)
+  (listen b-load-db :action l-load-db)
   (listen b-add-place :action l-add-place)
   (listen b-add-transition :action l-add-transition)
   (listen b-add-edge-to-transition :action l-add-edge-to-transition)

@@ -110,7 +110,7 @@
 (defn load-db
   "Loads a database. Replaces the old one."
   [file]
-  (controller/load-db))
+  (controller/load-db file))
 
 
 ;;;; Manipulate one net, for example add a place, transition, ...
