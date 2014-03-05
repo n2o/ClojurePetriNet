@@ -204,9 +204,3 @@
       
       (new-net :empty)))
 (init-two-nets)
-
-;; Merge two nets, get a new merged one added to 'nets'
-;(do
-;  (merge-net :first :second {} {:bombe :foo})
-;  (pprint @nets))
-@nets
