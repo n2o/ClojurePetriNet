@@ -26,8 +26,7 @@
                          :edges-to-trans   {}
                          :places           {}
                          :transitions     #{}
-                         :props           #{}}))
-
+                         :props            []}))
 (defn delete-net
   "Removes one net including all data from the database 'nets'."
   [net]
@@ -110,12 +109,12 @@
 (defn add-property
   "Adds a new transition into a petri net."
   [net name]
-  (swap! nets update-in [net :properties] #(clojure.set/union % #{name})))
+  (swap! nets update-in [net :props] #(conj % name)))
 
 (defn delete-property
   "Adds a new transition into a petri net."
   [net name]
-  (swap! nets update-in [net :properties] #(remove #{name} %)))
+  (swap! nets update-in [net :props] #(remove #{name} %)))
 
 
 ;;;; Merging two nets
@@ -180,7 +179,7 @@
 
 
 ;;;; Testing area
-(defn init-two-nets []
+(defn init-nets []
   (do (new-net :first)
       (add-transition :first :bombe)
       (add-transition :first :bombi)
@@ -203,4 +202,4 @@
       (add-edge-from-transition :second :foo :a 3)
       
       (new-net :empty)))
-(init-two-nets)
+(init-nets)

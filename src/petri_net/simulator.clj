@@ -23,7 +23,9 @@
   ([net t & ts]
      (if (transition-alive? net t)
        true
-       (some true? (map #(transition-alive? net %) ts)))))
+       (if  (some true? (map #(transition-alive? net %) ts))
+         true
+         false))))
 
 (defn non-empty?
   "There exists at least one token in the specified places."
@@ -32,14 +34,18 @@
   ([net p & ps]
      (if (fireable? net [p 0])
        true
-       (some true? (map #(fireable? net [% 0]) ps)))))
+       (if (some true? (map #(fireable? net [% 0]) ps))
+         true
+         false))))
 
 (defn net-alive?
   "Checks if there exists at least one fireable transition."
   [net]
   (let [ts (apply list (api/get-transitions net))]
     (when-not (empty? ts)
-      (some true? (map #(transition-alive? net %) ts)))))
+      (if (some true? (map #(transition-alive? net %) ts))
+        true
+        false))))
 
 (defn fire
   "Fires a specified transition."

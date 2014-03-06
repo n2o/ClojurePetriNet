@@ -16,6 +16,7 @@
 (def edges-from-trans (listbox))
 (def transitions (listbox))
 (def properties (listbox))
+(def properties-eval (listbox))
 
 ;;;; Buttons
 
@@ -107,8 +108,7 @@
   (vertical-panel
    :border "Extend net"
    :items [(flow-panel :align :left :items [b-add-place b-add-transition])
-           (flow-panel :align :left :items [b-add-edge-to-transition])
-           (flow-panel :align :left :items [b-add-edge-from-transition])]))
+           (flow-panel :align :left :items [b-add-edge-to-transition b-add-edge-from-transition])]))
 
 (def group-sim
   (vertical-panel
@@ -120,7 +120,9 @@
   (vertical-panel
    :border "Set up some properties"
    :items [(flow-panel :align :left :items [b-net-alive b-transition-alive b-non-empty])
-           (scrollable properties :border "Current")]))
+           (horizontal-panel
+            :border "Current"
+            :items [(scrollable properties)])]))
 
 (def right-grid
   (grid-panel
@@ -140,15 +142,25 @@
    :content (horizontal-panel
              :items [left-grid mid-grid right-grid])))
 
-;;;; Auxiliary functions
+;;;; Update textboxes and buttons
+
+(defn update-properties!
+  "Update the properties for selected net."
+  []
+  (when-let [net (selection nets)]
+    (let [props (api/get-properties net)
+          props-e (eval (api/get-properties net))
+          output (map #(str %1 " <= " %2) props-e props)]
+      (config! properties :model output))))
 
 (defn update-boxes!
   "Updates all textboxes when something has changed."
   []
-  (config! places :model (api/get-places (selection nets)))
-  (config! edges-to-trans :model (api/get-edges-to-trans (selection nets)))
-  (config! edges-from-trans :model (api/get-edges-from-trans (selection nets)))
-  (config! transitions :model (api/get-transitions (selection nets))))
+  (when-let [net (selection nets)]
+    (config! places :model (api/get-places net))
+    (config! edges-to-trans :model (api/get-edges-to-trans net))
+    (config! edges-from-trans :model (api/get-edges-from-trans net))
+    (config! transitions :model (api/get-transitions net))))
 
 (defn update-nets!
   "Update listbox showing the nets."
@@ -179,40 +191,47 @@
 
 (defn l-boxes [e]
   (update-boxes!)
-  (toggle-buttons!))
+  (toggle-buttons!)
+  (update-properties!))
 
 (defn l-buttons [e]
-  (toggle-buttons!))
+  (toggle-buttons!)
+  (update-properties!))
 
 (defn l-add-place [e]
   (when-let [name (input "Name of place:")]
-    (when-let [tokens (input "Number of tokens for initialization:")]
+    (when-let [tokens (input "Number of tokens for initialization:" :value 0)]
       (api/add-place (selection nets) (read-string name) (read-string tokens))
-      (update-boxes!))))
+      (update-boxes!)
+      (update-properties!))))
 
 (defn l-add-transition [e]
   (when-let [name (input "Name of transition:")]
     (api/add-transition (selection nets) (read-string name))
-    (update-boxes!)))
+    (update-boxes!)
+    (update-properties!)))
 
 (defn l-add-edge-to-transition [e]
   (when-let     [from   (input "[From?]  Name of place:")]
     (when-let   [to     (input "[To?]    Name of transition:")]
-      (when-let [tokens (input "[Costs?] Weight of edge:")]
+      (when-let [tokens (input "[Costs?] Weight of edge:" :value 1)]
         (api/add-edge-to-transition (selection nets) (read-string from) (read-string to) (read-string tokens))
-        (update-boxes!)))))
+        (update-boxes!)
+        (update-properties!)))))
 
 (defn l-add-edge-from-transition [e]
   (when-let     [from   (input "[From?]  Name of transition:")]
     (when-let   [to     (input "[To?]    Name of place:")]
-      (when-let [tokens (input "[Costs?] Weight of edge:")]
+      (when-let [tokens (input "[Costs?] Weight of edge:" :value 1)]
         (api/add-edge-from-transition (selection nets) (read-string from) (read-string to) (read-string tokens))
-        (update-boxes!)))))
+        (update-boxes!)
+        (update-properties!)))))
 
 (defn l-new-net [e]
   (when-let [name (input "Name of new net:")]
     (api/new-net (read-string name))
     (update-nets!)
+    (update-properties!)
     (selection! nets (read-string name))))
 
 (defn l-delete-net [e]
@@ -261,6 +280,20 @@
     (api/load-db (.getPath file))
     (update-nets!)))
 
+(defn l-net-alive [e]
+  (api/add-property (selection nets) `(simulator/net-alive? ~(selection nets)))
+  (update-properties!))
+
+(defn l-transition-alive [e]
+  (api/add-property (selection nets)
+                    `(simulator/transition-alive? ~(selection nets) ~@(selection transitions {:multi? true})))
+  (update-properties!))
+
+(defn l-non-empty [e]
+  (api/add-property (selection nets)
+                    `(simulator/non-empty? ~(selection nets) ~@(selection places {:multi? true})))
+  (update-properties!))
+
 ;;;; Mainfunction to initialize the frame and call all needed listeners
 
 (defn -main [& args]
@@ -282,4 +315,7 @@
   (listen b-delete-net :action l-delete-net)
   (listen b-merge-net :action l-merge-net)
   (listen b-sim-fire :action l-sim-fire)
-  (listen b-sim-fire-random :action l-sim-fire-random))
+  (listen b-sim-fire-random :action l-sim-fire-random)
+  (listen b-net-alive :action l-net-alive)
+  (listen b-transition-alive :action l-transition-alive)
+  (listen b-non-empty :action l-non-empty))

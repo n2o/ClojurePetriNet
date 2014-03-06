@@ -118,7 +118,7 @@
 (defn add-place
   "Add a place to a net. Checks if the name placename is already taken. If yes, update entry in database."
   [net place tokens]
-  (when (and (net? net) (number? tokens) (< 0 tokens))
+  (when (and (net? net) (number? tokens) (<= 0 tokens))
     (controller/add-place net place tokens)))
 
 (defn update-place
@@ -139,7 +139,7 @@
 (defn add-edge-to-transition
   "Add an edge from a place to a transition. If the edge exists, update the entry."
   [net from to tokens]
-  (when (and (net? net) (number? tokens) (< 0 tokens))
+  (when (and (net? net) (number? tokens) (<= 0 tokens))
     (when-not (or (nil? ((get-places net) from))
                   (nil? ((get-transitions net) to)))
       (controller/add-edge-to-transition net from to tokens))))
@@ -147,7 +147,7 @@
 (defn add-edge-from-transition
   "Add an edge from a transition to a place. Update entry if exists."
   [net from to tokens]
-  (when (and (net? net) (number? tokens) (< 0 tokens))
+  (when (and (net? net) (number? tokens) (<= 0 tokens))
     (when-not (or (nil? ((get-transitions net) from))
                   (nil? ((get-places net) to)))
       (controller/add-edge-from-transition net from to tokens))))
@@ -162,10 +162,16 @@
 
 ;;;; Edit properties
 
+(defn get-properties
+  "Returns all saved properties for specified net."
+  [net]
+  (when (net? net)
+    ((get-net net) :props)))
+
 (defn add-property
   "Adds a new transition into a petri net."
   [net name]
-  (when (net? net)
+  (when (and (net? net) (not (some #(= name %) (get-properties net))))
     (controller/add-property net name)))
 
 (defn delete-property
@@ -173,3 +179,4 @@
   [net name]
   (when (net? net)
     (controller/delete-property net name)))
+
