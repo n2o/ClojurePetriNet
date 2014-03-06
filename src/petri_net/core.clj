@@ -8,7 +8,8 @@
 ;;    {:edges-from-trans   {:from {:to tokens}}
 ;;     :edges-to-trans     {:from {:to tokens}}
 ;;     :places             {:place1 Tokens, :place2 42, ...}
-;;     :transitions       #{:name1, :name2, ...}}
+;;     :transitions       #{:name1, :name2, ...}
+;;     :props              []}}
 ;;
 ;; edges-from-trans : key is :from, seems to be a good idea
 ;; edges-to-trans   : key is :to, seems to be a good idea
@@ -202,14 +203,14 @@
       (add-edge-from-transition :first :bombi :a 22)
       (add-edge-from-transition :first :bombe :a 20)
       (add-edge-from-transition :first :bombi :b 10)
-      
+
       (new-net :second)
       (add-transition :second :foo)
       (add-place :second :q 22)
       (add-place :second :a 55)
       (add-edge-to-transition :second :q :foo 1)
       (add-edge-from-transition :second :foo :a 3)
-      
+
       (new-net :empty)))
 ;(init-nets)
 
