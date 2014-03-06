@@ -2,8 +2,8 @@
   (:gen-class)
   (:use [seesaw.core])
   (:use [seesaw.mig])
-  (:require [petri-net.api :as api] :reload)
-  (:require [petri-net.simulator :as simulator] :reload)
+  (:require [petri-net.api :as api])
+  (:require [petri-net.simulator :as simulator])
   (:require [seesaw.chooser :as chooser]))
 
 (native!)
@@ -44,7 +44,7 @@
 (def b-merge-net
   (button :text "Merge nets" :enabled? false))
 (def b-sim-fire
-  (button :text "Fire marked transition" :enabled? false))
+  (button :text "Fire selected transition" :enabled? false))
 (def b-sim-fire-random
   (button :text "Fire random transition" :enabled? false))
 (def b-net-alive
