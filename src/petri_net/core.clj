@@ -32,6 +32,15 @@
   [net]
   (swap! nets dissoc net))
 
+(defn copy-net
+  "Copys one net."
+  [net name]
+  (swap! nets assoc name {:edges-from-trans ((@nets net) :edges-from-trans)
+                          :edges-to-trans ((@nets net) :edges-to-trans)
+                          :places ((@nets net) :places)
+                          :transitions ((@nets net) :transitions)
+                          :props []}))
+
 (defn save-net
   "Saves one net into the file."
   [net]
@@ -46,13 +55,11 @@
   "Saves the whole database into the file."
   []
   (spit (str "database.dsl") @nets))
-(save-db)
 
 (defn load-db
   "Loads a database. Replaces the old one."
   [file]
   (reset! nets (read-string (slurp file))))
-(load-db "database.dsl")
 
 
 ;;;; Auxiliary functions
@@ -204,4 +211,5 @@
       (add-edge-from-transition :second :foo :a 3)
       
       (new-net :empty)))
-(init-nets)
+;(init-nets)
+

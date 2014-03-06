@@ -47,6 +47,8 @@
   (when (place (get-places net))
     ((get-places net) place)))
 
+(get-tokens :first :p)
+
 (defn get-transitions
   "Returns all transitions for a spec. net if possible, else nil."
   [net]
@@ -84,6 +86,12 @@
   [net]
   (when (net? net)
     (controller/delete-net net)))
+
+(defn copy-net
+  "Copy a net."
+  [net name]
+  (when (net? net)
+    (controller/copy-net net name)))
 
 (defn merge-net
   "Merging two nets and define which places / transitions should be merged.

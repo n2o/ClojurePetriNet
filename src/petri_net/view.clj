@@ -39,6 +39,8 @@
   (button :text "New net"))
 (def b-delete-net
   (button :text "Delete net" :enabled? false))
+(def b-copy-net
+  (button :text "Copy selected net" :enabled? false))
 (def b-merge-net
   (button :text "Merge nets" :enabled? false))
 (def b-sim-fire
@@ -75,14 +77,9 @@
   (vertical-panel
    :border "Net Actions"
    :items [(flow-panel :align :left :items [b-load-db b-save-db b-load-net b-save-net])
-           (flow-panel :align :left :items [b-new-net b-delete-net b-merge-net])
+           (flow-panel :align :left :items [b-new-net b-delete-net b-copy-net b-merge-net])
            (flow-panel :align :left :items [b-add-place b-add-transition])
            (flow-panel :align :left :items [b-add-edge-to-transition b-add-edge-from-transition])]))
-
-(def group-net-extend
-  (vertical-panel
-   :border "Extend net"
-   :items []))
 
 (def group-sim
   (vertical-panel
@@ -133,6 +130,13 @@
    :content (horizontal-panel
              :items [left-grid mid-grid right-grid])))
 
+;;;; Auxiliary functions
+
+(defn selected-property
+  "Get 'real' property and remove {true false} <= in front of property."
+  [prop]
+  (read-string (second (re-find #".+ <= (.+)" prop))))
+
 ;;;; Update textboxes and buttons
 
 (defn update-properties!
@@ -162,7 +166,7 @@
   "Disables buttons if no net or transition is selected. Otherwise activate them."
   []
   (let [net [b-add-place b-add-transition b-add-edge-to-transition b-add-edge-from-transition
-             b-save-net b-delete-net b-merge-net
+             b-save-net b-delete-net b-copy-net b-merge-net
              b-sim-fire-random
              b-net-alive]
         trans [b-sim-fire
@@ -232,7 +236,19 @@
 
 (defn l-delete-net [e]
   (api/delete-net (selection nets))
-  (update-nets!))
+  (update-nets!)
+  (update-boxes!)
+  (update-properties!)
+  (toggle-buttons!))
+
+(defn l-copy-net [e]
+  (when-let [name (input "Name of the new net:")]
+    (api/copy-net (selection nets) (read-string name))
+    (update-nets!)
+    (update-boxes!)
+    (update-properties!)
+    (toggle-buttons!)
+    (selection! nets (read-string name))))
 
 (defn l-merge-net [e]
   (when-let       [net1   (input "[net1] Type first net to be merged:")]
@@ -293,11 +309,6 @@
   (update-properties!)
   (toggle-buttons!))
 
-(defn selected-property
-  "Get 'real' property and remove {true false} <= in front of property."
-  [prop]
-  (read-string (second (re-find #".+ <= (.+)" prop))))
-
 (defn l-delete-property [e]
   (when-let [prop (selection properties {:multi? true})]
     (let [selected (map selected-property prop)]
@@ -316,20 +327,18 @@
 
 (defn l-combine-with-or [e]
   (when-let [prop (selection properties {:multi? true})]
-    (let [selected (map selected-property prop)]
-      (doall
-       (map #(api/delete-property (selection nets) `~%) selected))
-      (api/add-property (selection nets) `(or ~@selected))
-      (update-properties!)
-      (toggle-buttons!))))
+    (when (<= 2 (count prop))
+      (let [selected (map selected-property prop)]
+        (doall
+         (map #(api/delete-property (selection nets) `~%) selected))
+        (api/add-property (selection nets) `(or ~@selected))
+        (update-properties!)
+        (toggle-buttons!)))))
 
 
 ;;;; Mainfunction to initialize the frame and call all needed listeners
 
-(defn -main [& args]
-  (-> main-frame
-      pack!
-      show!)
+(defn listeners []
   (listen nets :selection l-boxes)
   (listen transitions :selection l-buttons)
   (listen places :selection l-buttons)
@@ -343,6 +352,7 @@
   (listen b-add-edge-from-transition :action l-add-edge-from-transition)
   (listen b-new-net :action l-new-net)
   (listen b-delete-net :action l-delete-net)
+  (listen b-copy-net :action l-copy-net)
   (listen b-merge-net :action l-merge-net)
   (listen b-sim-fire :action l-sim-fire)
   (listen b-sim-fire-random :action l-sim-fire-random)
@@ -352,3 +362,9 @@
   (listen b-delete-property :action l-delete-property)
   (listen b-negate-property :action l-negate-property)
   (listen b-combine-with-or :action l-combine-with-or))
+
+(defn -main [& args]
+  (-> main-frame
+      pack!
+      show!)
+  (listeners))
