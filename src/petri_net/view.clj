@@ -16,7 +16,6 @@
 (def edges-from-trans (listbox))
 (def transitions (listbox))
 (def properties (listbox))
-(def properties-eval (listbox))
 
 ;;;; Buttons
 
@@ -52,43 +51,18 @@
   (button :text "Transition alive?" :enabled? false))
 (def b-non-empty
   (button :text "Non empty?" :enabled? false))
-
+(def b-delete-property
+  (button :text "Delete property" :enabled? false))
+(def b-negate-property
+  (button :text "Negate property" :enabled? false))
+(def b-combine-with-or
+  (button :text "Combine properties with or" :enabled? false))
 ;;;; Textfields
 
 (def t-sim-fire-n-times
   (text :text 1 :columns 5))
 
-;;;; Menubar
-
-(defn a-exit  [e] (println "a-exit"))
-(defn a-copy  [e] (println "a-copy"))
-(defn a-cut   [e] (println "a-cut"))
-(defn a-paste [e] (println "a-paste"))
-
-
-(def menus
-     (let [a-exit (action :handler a-exit :name "Exit" :tip "Exit the editor.")
-           a-copy (action :handler a-copy :name "Copy" :tip "Copy selected text to the clipboard.")
-           a-paste (action :handler a-paste :name "Paste" :tip "Paste text from the clipboard.")
-           a-cut (action :handler a-cut :name "Cut" :tip "Cut text to the clipboard.")]
-       (menubar
-        :items [(menu :text "File" :items [a-exit])
-                (menu :text "Edit" :items [a-copy a-cut a-paste])])))
-
 ;;;; Setting up the layout
-
-(def left-grid (grid-panel :border "Database"
-                           :columns 1
-                           :items [(scrollable nets :border "Nets")
-                                   (scrollable places :border "Places")
-                                   (scrollable edges-to-trans :border "Edges from place to transition")
-                                   (scrollable edges-from-trans :border "Edges from transition to place")
-                                   (scrollable transitions :border "Transitions")]
-                           :vgap 0 :hgap 0))
-
-(def mid-grid (grid-panel :columns 3
-                          :items []
-                          :vgap 5 :hgap 5))
 
 (def group-sim-automatic
   (grid-panel
@@ -100,15 +74,15 @@
 (def group-net-actions
   (vertical-panel
    :border "Net Actions"
-   :items [(flow-panel :align :left :items [b-load-db b-save-db])
-           (flow-panel :align :left :items [b-load-net b-save-net])
-           (flow-panel :align :left :items [b-new-net b-delete-net b-merge-net])]))
+   :items [(flow-panel :align :left :items [b-load-db b-save-db b-load-net b-save-net])
+           (flow-panel :align :left :items [b-new-net b-delete-net b-merge-net])
+           (flow-panel :align :left :items [b-add-place b-add-transition])
+           (flow-panel :align :left :items [b-add-edge-to-transition b-add-edge-from-transition])]))
 
 (def group-net-extend
   (vertical-panel
    :border "Extend net"
-   :items [(flow-panel :align :left :items [b-add-place b-add-transition])
-           (flow-panel :align :left :items [b-add-edge-to-transition b-add-edge-from-transition])]))
+   :items []))
 
 (def group-sim
   (vertical-panel
@@ -122,13 +96,31 @@
    :items [(flow-panel :align :left :items [b-net-alive b-transition-alive b-non-empty])
            (horizontal-panel
             :border "Current"
-            :items [(scrollable properties)])]))
+            :items [(scrollable properties)])
+           (flow-panel
+            :align :left
+            :border "Actions for selected properties"
+            :items [b-delete-property b-negate-property b-combine-with-or])]))
+
+(def left-grid
+  (grid-panel :border "Database"
+              :columns 1
+              :items [(scrollable nets :border "Nets")
+                      (scrollable places :border "Places")
+                      (scrollable edges-to-trans :border "Edges from place to transition")
+                      (scrollable edges-from-trans :border "Edges from transition to place")
+                      (scrollable transitions :border "Transitions")]
+              :vgap 0 :hgap 0))
+
+(def mid-grid
+  (grid-panel :columns 3
+              :items []
+              :vgap 5 :hgap 5))
 
 (def right-grid
   (grid-panel
    :columns 1
    :items [group-net-actions
-           group-net-extend
            group-sim
            group-properties]
    :vgap 5 :hgap 5))
@@ -138,7 +130,6 @@
    :title "Petri-Net Simulator"
    :minimum-size [640 :by 480]
    :on-close :exit
-   :menubar menus
    :content (horizontal-panel
              :items [left-grid mid-grid right-grid])))
 
@@ -176,7 +167,8 @@
              b-net-alive]
         trans [b-sim-fire
                b-transition-alive]
-        place [b-non-empty]]
+        place [b-non-empty]
+        props [b-delete-property b-negate-property b-combine-with-or]]
     (if (nil? (selection nets))
       (config! net :enabled? false)
       (config! net :enabled? true))
@@ -185,7 +177,11 @@
       (config! trans :enabled? true))
     (if (nil? (selection places))
       (config! place :enabled? false)
-      (config! place :enabled? true))))
+      (config! place :enabled? true))
+    (if (or (nil? (selection nets))
+            (zero? (count (api/get-properties (selection nets)))))
+      (config! props :enabled? false)
+      (config! props :enabled? true))))
 
 ;;;; Defining listener
 
@@ -282,17 +278,51 @@
 
 (defn l-net-alive [e]
   (api/add-property (selection nets) `(simulator/net-alive? ~(selection nets)))
-  (update-properties!))
+  (update-properties!)
+  (toggle-buttons!))
 
 (defn l-transition-alive [e]
   (api/add-property (selection nets)
                     `(simulator/transition-alive? ~(selection nets) ~@(selection transitions {:multi? true})))
-  (update-properties!))
+  (update-properties!)
+  (toggle-buttons!))
 
 (defn l-non-empty [e]
   (api/add-property (selection nets)
                     `(simulator/non-empty? ~(selection nets) ~@(selection places {:multi? true})))
-  (update-properties!))
+  (update-properties!)
+  (toggle-buttons!))
+
+(defn selected-property
+  "Get 'real' property and remove {true false} <= in front of property."
+  [prop]
+  (read-string (second (re-find #".+ <= (.+)" prop))))
+
+(defn l-delete-property [e]
+  (when-let [prop (selection properties {:multi? true})]
+    (let [selected (map selected-property prop)]
+      (doall
+       (map #(api/delete-property (selection nets) `~%) selected))
+      (update-properties!)
+      (toggle-buttons!))))
+
+(defn l-negate-property [e]
+  (when-let [prop (selection properties)]
+    (let [selected (selected-property prop)]
+      (api/delete-property (selection nets) `~selected)
+      (api/add-property    (selection nets) `(not ~selected))
+      (update-properties!)
+      (toggle-buttons!))))
+
+(defn l-combine-with-or [e]
+  (when-let [prop (selection properties {:multi? true})]
+    (let [selected (map selected-property prop)]
+      (doall
+       (map #(api/delete-property (selection nets) `~%) selected))
+      (api/add-property (selection nets) `(or ~@selected))
+      (update-properties!)
+      (toggle-buttons!))))
+
 
 ;;;; Mainfunction to initialize the frame and call all needed listeners
 
@@ -318,4 +348,7 @@
   (listen b-sim-fire-random :action l-sim-fire-random)
   (listen b-net-alive :action l-net-alive)
   (listen b-transition-alive :action l-transition-alive)
-  (listen b-non-empty :action l-non-empty))
+  (listen b-non-empty :action l-non-empty)
+  (listen b-delete-property :action l-delete-property)
+  (listen b-negate-property :action l-negate-property)
+  (listen b-combine-with-or :action l-combine-with-or))

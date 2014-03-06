@@ -114,7 +114,9 @@
 (defn delete-property
   "Adds a new transition into a petri net."
   [net name]
-  (swap! nets update-in [net :props] #(remove #{name} %)))
+  (let [props   ((@nets net) :props)
+        n-props (vec (remove #{name} props))]
+    (swap! nets assoc-in [net :props] n-props)))
 
 
 ;;;; Merging two nets
