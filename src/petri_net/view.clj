@@ -59,6 +59,8 @@
   (button :text "Negate property" :enabled? false))
 (def b-combine-with-or
   (button :text "Combine properties with or" :enabled? false))
+
+
 ;;;; Textfields
 
 (def t-sim-fire-n-times
@@ -76,8 +78,7 @@
 (def group-net-actions
   (vertical-panel
    :border "Net Actions"
-   :items [(flow-panel :align :left :items [b-load-db b-save-db b-load-net b-save-net])
-           (flow-panel :align :left :items [b-new-net b-delete-net b-copy-net b-merge-net])
+   :items [(flow-panel :align :left :items [b-new-net b-delete-net b-copy-net b-merge-net])
            (flow-panel :align :left :items [b-add-place b-add-transition])
            (flow-panel :align :left :items [b-add-edge-to-transition b-add-edge-from-transition])]))
 
@@ -121,14 +122,6 @@
            group-sim
            group-properties]
    :vgap 5 :hgap 5))
-
-(def main-frame
-  (frame
-   :title "Petri-Net Simulator"
-   :minimum-size [640 :by 480]
-   :on-close :exit
-   :content (horizontal-panel
-             :items [left-grid mid-grid right-grid])))
 
 ;;;; Auxiliary functions
 
@@ -305,7 +298,7 @@
 
 (defn l-non-empty [e]
   (api/add-property (selection nets)
-                    `(simulator/non-empty? ~(selection nets) ~@(selection places {:multi? true})))
+                    `(simulator/non-empty? ~(selection nets) ~@(map first (selection places {:multi? true}))))
   (update-properties!)
   (toggle-buttons!))
 
@@ -336,16 +329,26 @@
         (toggle-buttons!)))))
 
 
+;;;; Menubar
+
+(defn l-exit [e] (System/exit 0))
+
+(def menus
+  (let [a-save-db (action :handler l-save-db :name "Save Database")
+        a-load-db (action :handler l-load-db :name "Load Database" :tip "Overwrites the old database!")
+        a-save-net (action :handler l-save-net :name "Save net")
+        a-load-net (action :handler l-load-net :name "Load net")
+        a-exit (action :handler l-exit :name "Exit" :tip "Exit the editor.")]
+    (menubar
+     :items [(menu :text "File" :items [a-save-db a-load-db a-save-net a-load-net a-exit])])))
+
+
 ;;;; Mainfunction to initialize the frame and call all needed listeners
 
 (defn listeners []
   (listen nets :selection l-boxes)
   (listen transitions :selection l-buttons)
   (listen places :selection l-buttons)
-  (listen b-save-net :action l-save-net)
-  (listen b-load-net :action l-load-net)
-  (listen b-save-db :action l-save-db)
-  (listen b-load-db :action l-load-db)
   (listen b-add-place :action l-add-place)
   (listen b-add-transition :action l-add-transition)
   (listen b-add-edge-to-transition :action l-add-edge-to-transition)
@@ -362,6 +365,15 @@
   (listen b-delete-property :action l-delete-property)
   (listen b-negate-property :action l-negate-property)
   (listen b-combine-with-or :action l-combine-with-or))
+
+(def main-frame
+  (frame
+   :title "Petri-Net Simulator"
+   :minimum-size [640 :by 480]
+   :on-close :exit
+   :menubar menus
+   :content (horizontal-panel
+             :items [left-grid mid-grid right-grid])))
 
 (defn -main [& args]
   (-> main-frame

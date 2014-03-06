@@ -30,11 +30,11 @@
 (defn non-empty?
   "There exists at least one token in the specified places."
   ([net p]
-     (fireable? net [p 0]))
+     (fireable? net [p 1]))
   ([net p & ps]
-     (if (fireable? net [p 0])
+     (if (fireable? net [p 1])
        true
-       (if (some true? (map #(fireable? net [% 0]) ps))
+       (if (some true? (map #(fireable? net [% 1]) ps))
          true
          false))))
 

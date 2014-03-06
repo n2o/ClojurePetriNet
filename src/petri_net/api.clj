@@ -44,10 +44,8 @@
 (defn get-tokens
   "Returns the tokens from a specific place."
   [net place]
-  (when (place (get-places net))
+  (when ((get-places net) place)
     ((get-places net) place)))
-
-(get-tokens :first :p)
 
 (defn get-transitions
   "Returns all transitions for a spec. net if possible, else nil."
