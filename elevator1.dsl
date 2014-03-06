@@ -1,0 +1,1 @@
+{:elevator1 {:edges-from-trans {:a2 {:p1 1}, :a1 {:p2 1}}, :edges-to-trans {:p2 {:a2 1}, :p1 {:a1 1}}, :places {:p2 3, :p1 0}, :transitions #{:a2 :a1}, :props []}}
