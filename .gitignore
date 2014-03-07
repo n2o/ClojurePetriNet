@@ -9,4 +9,4 @@ pom.xml.asc
 /.lein-*
 /.nrepl-port
 /src/petri_net/.#core.clj
-*.pdf
+FP13_Projekt.pdf
