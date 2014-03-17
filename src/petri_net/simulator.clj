@@ -42,10 +42,11 @@
   "Checks if there exists at least one fireable transition."
   [net]
   (let [ts (apply list (api/get-transitions net))]
-    (when-not (empty? ts)
+    (if-not (empty? ts)
       (if (some true? (map #(transition-alive? net %) ts))
         true
-        false))))
+        false)
+      false)))
 
 (defn fire
   "Fires a specified transition."
