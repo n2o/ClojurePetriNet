@@ -43,27 +43,31 @@ For the database was a big hash-map chosen. Every net is a keyword and has as th
 
 So an example net will look like:
 
-    {:example-net
-     {:edges-from-trans
-        {:from-p {:to-t :cost}}
-      :edges-to-trans
-        {:from-t {:to-p1 1 :to-p2 1}}
-      :places
-        {:p1 0 :p2 1}
-      :transitions
-        #{:to-t :from-t}
-      :props
-        [(petri-net.simulator/net-alive?
-                         :example-net)]}
-     :next-net
-     ...
-    }
+```clojure
+{:example-net
+ {:edges-from-trans
+    {:from-p {:to-t :cost}}
+  :edges-to-trans
+    {:from-t {:to-p1 1 :to-p2 1}}
+  :places
+    {:p1 0 :p2 1}
+  :transitions
+    #{:to-t :from-t}
+  :props
+    [(petri-net.simulator/net-alive?
+                     :example-net)]}
+ :next-net
+ ...
+}
+```
 
 Choosing this structure provides the great ability to use the
 function `assoc-in`, which makes most of the work when the user
 wants to create or modify one of the edges. The simple call
 
-    (swap! nets assoc-in [net :edges-to-trans from to] tokens)
+```clojure
+(swap! nets assoc-in [net :edges-to-trans from to] tokens)
+```
 
 has two functionalities:
 
