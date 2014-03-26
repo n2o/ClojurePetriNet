@@ -17,7 +17,9 @@ After this you can create your own jar file with
 
     $ lein uberjar
 
-If you want to use the REPL your almost done after `$ lein deps`. Just start it as usual with `$ lein repl`.
+If you want to use the REPL your almost done after `$ lein deps`. Just start it as usual with 
+
+    $ lein repl
 
 
 ## Usage
@@ -65,6 +67,11 @@ For some examples, start the GUI, click in the Menubar --> File --> Load Databas
 There are currently 3 nets in the database. Select one net from the left and start simulating two traffic lights, one or two elevators or create your own ones.
 
 
+## Documentation and Design Decisions
+
+[Click here to see my Documentation and Design Decisions.](../master/doc/documentation.md)
+
+
 ### Future Work
 
 * Add option to delete places, transitions, edges, ...
@@ -74,5 +81,4 @@ There are currently 3 nets in the database. Select one net from the left and sta
 
 Copyright © 2014 Christian Meter
 
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
+Distributed under the MIT License
