@@ -167,4 +167,4 @@ true <= (petri-net.simulator/net-alive? :example-net)
 
 ## GUI
 
-JavaFX vs. SeeSaw
+#### SeeSaw - GUIs done the Clojure way
