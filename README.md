@@ -64,6 +64,8 @@ But it is highly recommended to use the GUI instead.
 
 For some examples, start the GUI, click in the Menubar --> File --> Load Database and locate database.dsl in this respository.
 
+![Load Database](../master/doc/img/load_database.tiff)
+
 There are currently 3 nets in the database. Select one net from the left and start simulating two traffic lights, one or two elevators or create your own ones.
 
 
