@@ -62,11 +62,19 @@ But it is highly recommended to use the GUI instead.
 
 ## Examples
 
-For some examples, start the GUI, click in the Menubar --> File --> Load Database and locate database.dsl in this respository.
+For some examples, start the GUI, click in the
+Menubar --> File --> Load Database and locate database.dsl in this respository.
 
 ![Load Database](http://imageshack.com/a/img27/3171/a96e.png)
 
-There are currently 3 nets in the database. Select one net from the left and start simulating two traffic lights, one or two elevators or create your own ones.
+There are currently 3 nets in the database. Select one net from the left and
+start simulating two traffic lights, one or two elevators or create your own ones.
+
+Available:
+  * database.dsl - stores the three sample nets
+  * two-traffic-lights.dsl - sample net
+  * elevator1.dsl - sample net
+  * elevator2.dsl - sample net with configured properties
 
 
 ## Documentation and Design Decisions
@@ -74,7 +82,7 @@ There are currently 3 nets in the database. Select one net from the left and sta
 [Click here to see my Documentation and Design Decisions.](../master/doc/documentation.md)
 
 
-### Future Work
+## Future Work
 
 * Add option to delete places, transitions, edges, ...
 * Add graphical visualization.
