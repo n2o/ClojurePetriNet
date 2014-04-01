@@ -58,9 +58,10 @@
    Represented in a hashmap concluding {place cost-of-edge, ...}."
   [net t]
   (let [trans (get-edges-to-trans net)]
-    (apply hash-map (remove nil? (flatten
-                                  (for [[k v] trans] (for [[foo tokens] v]
-                                                       (when (= t foo) [k tokens]))))))))
+    (apply hash-map
+           (remove nil? (flatten
+                         (for [[k v] trans] (for [[foo tokens] v]
+                                              (when (= t foo) [k tokens]))))))))
 
 (defn get-places-from-transition
   "Returns the places which have an edge from a transition.

@@ -20,6 +20,48 @@ encapsulate the program as follows:
   make (random) modification of the petri net possible.
 * The **GUI** visualizes the current DSL.
 
+## Why are there no private functions?
+
+### (Partly) Test Driven Development
+
+To be honest: In the beginning of such a project I believe there are mostly
+no tests - just start hacking and see where it leads to. So it was in
+this project.
+
+But as complexity increased I thought that tests could be very useful.
+I started to write some tests for the Controller before I started with
+the merge function, because this was very hard and I did not want to
+kill some functions. From this point I wrote additional tests *before*
+implementing new features, as it is known in test driven development.
+
+While testing my functions I had the problem that private functions 
+can not be accessed directly with *Midje*. I decided to make all
+functions public until the development has finished.
+
+### Midje
+
+As stated above, Midje is used by this project. Midje offers a very simple
+notation to add new facts and this is very very great
+
+```clojure
+(facts "Merging transitions from two nets."
+  (fact 
+    (controller/merge-transitions :first #{:some-transitions} #{...} {...}) 
+        => #{:result}
+    (controller/merge-transitions :first #{:another-fact} #{:foo} {:bar}) 
+        => #{:next-result}))
+```
+
+While the development an extra Terminal windows was running `lein midje :autotest`
+so on every change in the project all facts are evaluated and you can see
+the process.
+
+#### Simple way to test
+
+To give the test some sample input, the function `(init-nets)` can be found at the
+bottom of the Controller. This needs to be uncommented to enable some input. The
+tests will evaluate these inputs and show the results.
+
 ## Controller
 
 #### Logic
@@ -97,8 +139,8 @@ And this is exactly that, what is needed for this structure.
 The properties are here stored via quoting into the vector.
 When the propertyies are evaluated, the result is printed as
 `true` or `false`. With this method it is possible to evaluate
-the properties when they are needed. Everytime something was 
-changed in the database, the result of the properties is 
+the properties when they are needed. Everytime something was
+changed in the database, the result of the properties is
 displayed in the GUI automatically.
 
 The *vector* datatype was chosen because it provides a good method
@@ -232,17 +274,3 @@ If there are more than one properties selected, the user can
 combine the selected properties with *or*. The original
 properties are then deleted and the new one with `(or ...)`
 and the selected properties as arguments is added.
-
-
-
-
-
-
-
-
-
-
-
-
-
-

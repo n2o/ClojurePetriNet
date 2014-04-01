@@ -48,6 +48,7 @@
         false)
       false)))
 
+
 (defn fire
   "Fires a specified transition."
   [net t]

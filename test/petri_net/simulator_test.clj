@@ -21,15 +21,14 @@
     (simulator/non-empty? :first :p) => true
     (simulator/non-empty? :first :p :a) => true
     (simulator/non-empty? :first :p :a :z :nil) => true
-    (simulator/non-empty? :nilnet :nilplace) => nil
     (simulator/non-empty? :empty :nilplace) => nil
     (simulator/non-empty? :first :nil) => nil))
 
 (facts "Check if the net is alive."
   (fact
     (simulator/net-alive? :first) => true
-    (simulator/net-alive? :empty) => nil
-    (simulator/net-alive? :nilnet) => nil))
+    (simulator/net-alive? :empty) => false
+    (simulator/net-alive? :nilnet) => false))
 
 (facts "'Not' for properties."
   (fact

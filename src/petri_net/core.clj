@@ -212,3 +212,6 @@
       (add-edge-from-transition :second :foo :a 3)
 
       (new-net :empty)))
+
+;; Delete comment for test driven development
+;(init-nets)    
