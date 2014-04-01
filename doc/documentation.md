@@ -93,14 +93,15 @@ And this is exactly that, what is needed for this structure.
 
 
 ### Properties
-The properties are here stored via quoting into the vector.
-When the property is evaluated, the result is printed as
-`true` or `false`. With this method it is possible to evaluate
-the properties when they are needed and not as the user adds
-them to the DSL. Everytime something was changed in the database,
-the result of the properties is displayed in the GUI.
 
-The datatype vector was chosen because it provides a good method
+The properties are here stored via quoting into the vector.
+When the propertyies are evaluated, the result is printed as
+`true` or `false`. With this method it is possible to evaluate
+the properties when they are needed. Everytime something was 
+changed in the database, the result of the properties is 
+displayed in the GUI automatically.
+
+The *vector* datatype was chosen because it provides a good method
 to store function calls into a data structure, which does not
 execute it directly and which is no list. Otherwise there could
 be problems with trying to evaluate a boolean provided by the
@@ -126,8 +127,8 @@ encapsulated from the core.
 
 ## Simulator
 
-The simulator is built on top of the API. So I can assume that
-the user's input is correct.
+The simulator is totally built with the
+provided API. So I can assume that the user's input is correct.
 
 It provides some functions to analyse the nets, called
 *properties*, like `net-alive?`, `transition-alive?` and
@@ -168,3 +169,80 @@ true <= (petri-net.simulator/net-alive? :example-net)
 ## GUI
 
 #### SeeSaw - GUIs done the Clojure way
+
+To create a simple GUI there are all the known Java Tools which can be used
+in Clojure, but this will not be the idiomatic way for it. So
+I decided to use SeeSaw, which builts upon the known Java GUIs, but
+uses more idiomatic functions to create the GUI in Clojure - and
+it is very simple.
+
+SeeSaw has no good documentation, which made it hard to find all
+the arguments for most of the functions. But the simple way all
+functions are implemented made it easy to guess how the arguments
+are called and shall be used.
+
+The GUI consists of three columns, while the one in the middle
+is only used to create some space between the other two columns.
+The user needs to create a new net into the database or load a
+net / database from file (one database including three nets are
+provided with this software) and needs to choose from the listboxes
+what he wants to edit / fire / watch at in the nets.
+
+### Listeners for Simplicity
+
+To keep it simple there are several listeners on all textboxes,
+which look up if anything is selected in the textbox. If so the
+GUI activates some buttons, which can now be used. When the
+selection was removed, the buttons are toggled.
+
+So the user can only use functions which are really available.
+This provides a better usability, because the user can always
+see what he can now do with the simulator.
+
+### Net Actions
+
+Use the buttons in this field to add new stuff to the
+selected net.
+
+### Working with the Simulator
+
+The Simulator has two functions:
+
+  1. Select a transition, then select "Fire" to fire it
+  2. Specify how many steps the simulator will randomly
+     do for you
+
+In the random mode the simulator looks which transitions are
+fireable, chooses one and fires it. By this way it is ensured
+that the number of steps the user chose is executed automatically
+with high probability.
+
+### Adding / Modifying Properties
+
+The properties described above can be added by selecting some
+elements from the listboxes. They are automatically combined,
+added and evaluated by the simulator.
+
+If the user selects one property, there is the possibility
+to delete a property or surround it with *not*. The original
+property is then deleted and a new one with `(not ...)` is
+added to the list.
+
+If there are more than one properties selected, the user can
+combine the selected properties with *or*. The original
+properties are then deleted and the new one with `(or ...)`
+and the selected properties as arguments is added.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
