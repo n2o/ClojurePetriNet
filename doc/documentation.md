@@ -182,7 +182,7 @@ because they have another objective than the *API* and the
   * add / delete properties
   * fire the transitions for the next steps of the simulation.
 
-#### Design Decisions
+### Design Decisions
 
 Implementing the properties was very difficult, because I had
 to choose the right place when the evaluation of them should
@@ -207,6 +207,14 @@ corresponding listbox:
 ```clojure
 true <= (petri-net.simulator/net-alive? :example-net)
 ```
+
+### Not nil, but true or false
+
+The properties shall always tell the user, if a value is `true`
+or `false`. That is not really idiomatic, but is better for the
+evaluation of the properties. The functions in the simulator
+will then evaluate to true or false instead of `nil`.
+
 
 ## GUI
 
