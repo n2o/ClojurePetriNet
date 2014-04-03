@@ -34,7 +34,7 @@ the merge function, because this was very hard and I did not want to
 kill some functions. From this point I wrote additional tests *before*
 implementing new features, as it is known in test driven development.
 
-While testing my functions I had the problem that private functions 
+While testing my functions I had the problem that private functions
 can not be accessed directly with *Midje*. I decided to make all
 functions public until the development has finished.
 
@@ -45,10 +45,10 @@ notation to add new facts and this is very very great
 
 ```clojure
 (facts "Merging transitions from two nets."
-  (fact 
-    (controller/merge-transitions :first #{:some-transitions} #{...} {...}) 
+  (fact
+    (controller/merge-transitions :first #{:some-transitions} #{...} {...})
         => #{:result}
-    (controller/merge-transitions :first #{:another-fact} #{:foo} {:bar}) 
+    (controller/merge-transitions :first #{:another-fact} #{:foo} {:bar})
         => #{:next-result}))
 ```
 
@@ -147,7 +147,9 @@ The *vector* datatype was chosen because it provides a good method
 to store function calls into a data structure, which does not
 execute it directly and which is no list. Otherwise there could
 be problems with trying to evaluate a boolean provided by the
-functions `net-alive?`, `transition-alive?` and `non-empty?`.
+functions `net-alive?`, `transition-alive
+?` and `non-empty?`.
+
 
 
 ## API
@@ -282,3 +284,25 @@ If there are more than one properties selected, the user can
 combine the selected properties with *or*. The original
 properties are then deleted and the new one with `(or ...)`
 and the selected properties as arguments is added.
+
+
+## Things I tried to implement and changed my mind
+
+### GUI
+
+While looking for a GUI there are several ways which you can choose
+for Clojure (thanks to Java interop). But as I tried to create a GUI
+with JavaFX, there was nearly no possibility to get somehow a 
+guide or even only some information to build a GUI using JavaFX.
+
+After a while using SeeSaw seemed to be more idiomatic, simpler
+and almost easier (although the lack of a good documentation).
+
+### Add Edge to Transition
+
+In the first implementation it was only possible to add one edge
+to the existing net. That was the way to go until the evil merge
+functions got implemented. While merging it was easier to merge
+all of the Edges from both nets at once and so the return value
+was a map with multiple entries, which should be added to the DSL
+at once.
