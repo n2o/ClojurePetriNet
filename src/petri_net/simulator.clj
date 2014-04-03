@@ -18,8 +18,9 @@
   "Takes the current net and a variable number of transitions and checks if one of the transitions are alive."
   ([net t]
      (let [place-token (api/get-places-to-transition net t)]
-       (when-not (empty? place-token)
-         (every? identity (map #(fireable? net %) place-token)))))
+       (if-not (empty? place-token)
+         (every? identity (map #(fireable? net %) place-token))
+         false)))
   ([net t & ts]
      (if (transition-alive? net t)
        true

@@ -81,24 +81,91 @@ Nearly every function was built simple. Only `merge-net` appears a
 bit complected, but it just calls all the little merge-functions and
 combines every result to get the new merged net.
 
-#### Manipulating State
-Only few functions are needed to manipulate the DSL. Because there must
-be a place where the database of petri nets is modified, the functions
-are reduced to a minimum.
+
+### General structure of the database
 
 #### Data Structure
-For the database was a big hash-map chosen. Every net is a keyword and
-has as the value again a hash-map to store all information. Those
-information are:
+I used one atom to store the whole database, because each net is
+a big state containing places, transitions, their connections and the
+properties. For the database was therefore a big hash-map chosen. 
 
-* Edges, read as: `{:from {:to :costs}}` and divided into
-	* from one place to multiple transitions
-	* from one transition to multiple places
-* Places, a hash-map containing name of the place and number of tokens
-* Transitions, a hash-set containing the names of the transitions
-* Properties, a vector including the properties defined in the Simulator.
+By this way all petri nets are stored in the atom `nets`:
 
-So an example net will look like:
+```clojure
+{:net1 {:all :properties}
+ :net2 {:some-other :properties}
+ ...}
+```
+
+#### Edges from transition to places
+Each net has an entry in it's map called `:edges-from-trans`. It has the 
+following struture:
+
+```clojure
+;; read :edges-from-trans {:from {:to :costs}}
+:edges-from-trans {:t1 {:p1 20}, :t2 {:p2 10, :p1 22}}
+```
+
+The edges have a map, which stores the transition `t1, t2` as a key
+and the values are again maps containing the places `p1, p2` the transitions
+have an edge to with their corresponding costs. Multiple edges from one transition
+to different places can be stored into this structure.
+
+#### Edges from place to transitions
+For transitions from one specific place to multiple transitions have the 
+same structure:
+
+```clojure
+;; read :edges-from-trans {:from {:to :costs}}
+:edges-to-trans {:p1 {:t1 4}, :p2 {:t2 43, :t1 41}}
+```
+
+One place has a map whose keys are transitions and the values the costs 
+for this edge.
+
+#### Places
+Places are stored in a map (maps are great!) the way that keys are the
+places' names and the values are the number of tokens for each place:
+
+```clojure
+;; read :places {:place-name :tokens}
+:places {:p1 21, :p2 42, :p3 100, :p4 44}
+```
+
+This structure provides easy access to the tokens for each place and
+can be manipulated very simple.
+
+#### Transitions
+Transitions are stored in a set:
+
+```clojure
+:transitions #{:t1 :t2 :t3}
+```
+
+This structure is mainly needed for the GUI and the simulator to look
+up very fast transitions, i.e. to choose a fireable transition and fire it
+and to list all transitions in a listbox in the GUI.
+
+#### Properties
+Properties are stored as a whole function call in a vector. In this case
+it does not matter if I choose a set, a vector or a quoted list, because 
+the only thing the structure needs to provide is to store all calls without
+evaluating them to early:
+
+```clojure
+:props [(petri-net.simulator/transition-alive? :net :transition)]
+```
+
+They can be stored into the vector by syntax quoting them.
+
+Choosing this structure seems to be a good solution, because I do not loose
+any information when executing it, because the whole call is stored. When a
+user adds a property, the GUI will evaluate it in each step and this can be
+executed as many times as wanted.
+
+
+#### Sample net
+Using all the steps above lead to the following structure:
 
 ```clojure
 {:example-net
@@ -131,25 +198,21 @@ has two functionalities:
 * Update existing edge
 * Add new edge
 
-And this is exactly that, what is needed for this structure.
+And this is exactly that, what is needed for this structure: one function
+to get deep into the hash map structure and update the values needed.
 
-
-### Properties
-
-The properties are here stored via quoting into the vector.
-When the propertyies are evaluated, the result is printed as
-`true` or `false`. With this method it is possible to evaluate
-the properties when they are needed. Everytime something was
-changed in the database, the result of the properties is
-displayed in the GUI automatically.
-
-The *vector* datatype was chosen because it provides a good method
-to store function calls into a data structure, which does not
-execute it directly and which is no list. Otherwise there could
-be problems with trying to evaluate a boolean provided by the
-functions `net-alive?`, `transition-alive
-?` and `non-empty?`.
-
+#### Manipulating State
+Only few functions are needed to manipulate the DSL. Because there must
+be a place where the database of petri nets is modified, the functions
+are reduced to a minimum:
+  * new / delete / copy / load-net
+  * load-db
+  * add-place
+  * add-transition
+  * add-edge-to-transition
+  * add-edge-from-transition
+  * add / delete-property
+  * merge-net
 
 
 ## API
@@ -168,6 +231,7 @@ pure logic of this program to work with the petri nets.
 The API was designed to move the verification of the user's
 input into another place than the core. So this job could be
 encapsulated from the core.
+
 
 ## Simulator
 
@@ -286,7 +350,7 @@ properties are then deleted and the new one with `(or ...)`
 and the selected properties as arguments is added.
 
 
-## Things I tried to implement and changed my mind
+## Some other design decisions
 
 ### GUI
 
