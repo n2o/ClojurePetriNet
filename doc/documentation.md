@@ -170,13 +170,13 @@ Using all the steps above lead to the following structure:
 ```clojure
 {:example-net
  {:edges-from-trans
-    {:from-p {:to-t :cost}}
+    {:from-t {:to-p :cost}}
   :edges-to-trans
-    {:from-t {:to-p1 1 :to-p2 1}}
+    {:from-p {:to-t1 1 :to-t2 1}}
   :places
     {:p1 0 :p2 1}
   :transitions
-    #{:to-t :from-t}
+    #{:to-t1 :to-t1 :from-t}
   :props
     [(petri-net.simulator/net-alive? :example-net)]}
 
