@@ -65,13 +65,13 @@ tests will evaluate these inputs and show the results.
 ## Controller
 
 #### Logic
-All functions are here to initialize and manipulate the petri
+All functions to initialize and manipulate the petri
 nets are in the Controller. All other functions are using these
 functions to manipulate the state of the program.
 
 #### No inspection for valid input
 To keep the functions simple, none of them will check any input.
-They only do what has been typed into the REPL. So the liability
+They only do what was typed into the REPL. So the liability
 totally depends on the user's input. That is okay, because later
 on will be an API available to manipulate the DSL including an
 inspection for valid inputs.
@@ -198,7 +198,7 @@ has two functionalities:
 * Update existing edge
 * Add new edge
 
-And this is exactly that, what is needed for this structure: one function
+And this is exactly what is needed for this structure: one function
 to get deep into the hash map structure and update the values needed.
 
 #### Manipulating State
